@@ -1,0 +1,113 @@
+---
+###Data params
+###LOCAL PATHS
+#gff_path: 'Homo_sapiens.GRCh38.104.gff3.db' #if not database file, database will be created for you
+#variant_path: 'gnomAD_v3.1.1_KCNQ2.csv'
+#variant_path: 'gnomad_v3_variants.bed'
+###REMOTE PATHS
+gff_path: '/scratch/ucgd/lustre-work/quinlan/u6038618/constraint-tools/data/Homo_sapiens.GRCh38.104.gff3.db'
+variant_path: '/scratch/ucgd/lustre-work/quinlan/u6038618/constraint-tools/data/gnomAD_v3.1.1_ENSG00000075043_2021_09_16_16_02_28.csv'
+#variant_path: /scratch/ucgd/lustre-work/quinlan/data-shared/constraint-tools/gnomad/v3/gnomad_v3_variants.sorted.bed.gz
+#variant_path: '/scratch/ucgd/lustre-work/quinlan/u6038618/constraint-tools/data/gnomad.exomes.r2.1.1.sites.20.vcf.bgz'
+model_path: '/scratch/ucgd/lustre-work/quinlan/data-shared/constraint-tools/model.ptm.json' 
+####Plot params
+gene_name: 'KCNQ2'
+seqid: chr20
+
+plot_height: 200
+plot_width: 1500
+track_height: 10
+exon_height: 16 #must be even
+intron_size: 20
+
+plot_UTRs: True
+plot_direction: True
+
+glyph_colors:
+    intron: 'gray 11'
+    exon: 'davys gray'
+    arrow: '#252525'
+    UTR: '#969696'
+    variant: 'charcoal' #default lollipop color if no severity information
+
+track_palette: 'blues' #palette to draw random track colors from; can be any one palette in palettes.yaml
+...
+---
+#variants
+plot_variants: True
+seqid: 20 #for .vcf
+#seqid: chr20 #for .bed
+min_lollipop_height: 15
+lollipop_radius: 5
+lollipop_line_width: 2
+variant_severity_colors:
+    LOW: '#80b918'
+    #LOW: 'apple green'
+    MODERATE: '#f6aa1c'
+    HIGH: '#e01e37'
+    MODIFIER: '#778da9'
+...
+
+---
+###User defined tracks:
+
+domains:
+    #LOCAL
+    #gtf_path: 'pfam.sorted.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db; if not database, database will be created for you
+    #REMOTE
+    gtf_path: '/scratch/ucgd/lustre-work/quinlan/u6038618/constraint-tools/data/pfam.sorted.gtf.db'
+    seqid: chr20
+    colors: #leave empty to color all randomly
+        Ion_trans: '#f3722c' #color these boxes as specified, any unspecified boxes colored randomly
+        KCNQC3-Ank-G_bd: '#A09BE7'
+
+domains2:
+    #LOCAL
+    #gtf_path: 'pfam.sorted.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db
+    seqid: chr20
+    #REMOTE
+    gtf_path: '/scratch/ucgd/lustre-work/quinlan/u6038618/constraint-tools/data/pfam.sorted.gtf.db'
+#    colors: #leave empty to color all randomly
+
+domains3:
+    #LOCAL
+    #gtf_path: 'pfam.sorted.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db
+    seqid: chr20
+    #REMOTE
+    gtf_path: '/scratch/ucgd/lustre-work/quinlan/u6038618/constraint-tools/data/pfam.sorted.gtf.db'
+...
+---
+###User defined axes:
+
+Coverage:
+    #axis params
+    y_axis_label: 'Sequencing Coverage (30x)'
+    num_ticks: 3
+    tick_precision: 2 #number of decimal places
+    tick_scientific_notation: False #format ticks to scientific notation
+    smoothing_slider: False
+    lines:
+        Coverage:
+            #line params
+            filepath: 'test/coverage.bedgraph'
+            color: '#00916E'
+            alpha: 0.5
+            fill_area: True
+
+Mutation counts:
+    y_axis_label: 'Number of mutations'
+    num_ticks: 3
+    tick_precision: 4 #
+    tick_scientific_notation: False
+    smoothing_slider: True
+    lines:
+        Expected mutation counts: 
+            filepath: 'test/expected_mut_counts.txt'
+            color: '#f26419'
+            alpha: 1
+            fill_area: False
+        Observed mutation counts:
+            filepath: 'test/observed_mut_counts.txt'
+            color: '#19a7f2'
+            alpha: 1
+            fill_area: False

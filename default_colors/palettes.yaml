@@ -1,0 +1,8 @@
+#colors can be RGB (#xxxxxx or xxxxxx), or named colors from named_colors.yaml
+reds: [
+  'red salsa', 'orange red', 'maroon', 'irresistible', 'big dip oruby', 'rust', 'rose madder', 'carmine', 'vermillion', 'burgundy',
+]
+
+blues: [
+  'zomp', 'queen blue', 'medium slate blue', 'purple navy', 'ocean blue', 'indigo dye', 'wild blue yonder', 'oxford blue', 'dark sky blue', 'charcoal',
+]
