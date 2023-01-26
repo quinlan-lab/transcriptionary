@@ -6,7 +6,8 @@ def gff_to_db(gff_path,output_name):
         db = gffutils.FeatureDB(gff_path, keep_order=True)
     except:
         gffutils.create_db(gff_path, dbfn=output_name, force=True, keep_order=True, merge_strategy='merge', sort_attribute_values=True)
-        db = gffutils.FeatureDB(gff_path, keep_order=True)
+        #db = gffutils.FeatureDB(gff_path, keep_order=True)
+        db = gffutils.FeatureDB(output_name, keep_order=True)
     return db
 
 def get_gene_feature(gff_db, gene_name):
@@ -26,8 +27,7 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
         exons_all = gff_db.children(gene_feature, featuretype='exon')
         exons_all = [{'start': e.start, 'end': e.end} for e in exons_all]
         exons_all = project_coords.flatten_exons(exons_all)
-        transcript_dict['flattened-exons'] = dict(ID='flattened_exons', chr_num=chr_num, exons=exons_all,
-                                                  direction='', UTRs=[])    
+        transcript_dict['flattened-exons'] = dict(ID='flattened_exons', chr_num=chr_num, exons=exons_all, direction='', UTRs=[])    
         
     def get_UTRs(transcript):
         if not plot_params['plot_UTRs']: return []
@@ -48,7 +48,6 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
         for ID in transcript_IDs:
             if ID not in [t['Name'][0] for t in transcripts]: print('No such transcript {}; skipping'.format(ID))
         transcripts = [t for t in transcripts if t['Name'][0] in transcript_IDs]
-        #print([t['ID'] for t in transcripts])
 
     for t in transcripts:
         exons = list(gff_db.children(t, featuretype='exon'))
@@ -56,6 +55,5 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
         direction = t.strand if plot_params['plot_direction'] else ''
         tname = t['Name'][0]
         UTRs = get_UTRs(t)
-        transcript_dict[tname] = dict(ID=t['ID'], chr_num=chr_num, exons=exon_coords, direction=direction, 
-                                UTRs=UTRs)
+        transcript_dict[tname] = dict(ID=t['ID'], chr_num=chr_num, exons=exon_coords, direction=direction, UTRs=UTRs)
     return transcript_dict

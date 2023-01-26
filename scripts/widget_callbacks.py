@@ -100,7 +100,7 @@ def add_linear_log_scale(axes, glyph_dict):
         }
     """))    
 
-    radio_group_scale.active = 1
+    radio_group_scale.active = 0
     
     return div_type,radio_group_type,div_scale,radio_group_scale
 

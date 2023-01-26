@@ -1,4 +1,12 @@
 import csv
+import tabix
+
+import itertools as it
+try:
+    izip = it.izip
+except AttributeError:
+    izip = zip
+    basestring = str
 
 def variant_type(annotation):
     if annotation in ['synonymous_variant']:
@@ -14,18 +22,33 @@ def variant_type(annotation):
 
 def get_variants(filepath, start, end, seqid):
     def get_variants_vcf(vcf_path):
+
+        from cyvcf2 import VCF
+        from geneimpacts import VEP, Effect
+
+        vep_keys = 'Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYPE|EXON|INTRON|HGVSc|HGVSp|cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|Existing_variation|ALLELE_NUM|DISTANCE|STRAND|FLAGS|VARIANT_CLASS|MINIMISED|SYMBOL_SOURCE|HGNC_ID|CANONICAL|TSL|APPRIS|CCDS|ENSP|SWISSPROT|TREMBL|UNIPARC|GENE_PHENO|SIFT|PolyPhen|DOMAINS|HGVS_OFFSET|GMAF|AFR_MAF|AMR_MAF|EAS_MAF|EUR_MAF|SAS_MAF|AA_MAF|EA_MAF|ExAC_MAF|ExAC_Adj_MAF|ExAC_AFR_MAF|ExAC_AMR_MAF|ExAC_EAS_MAF|ExAC_FIN_MAF|ExAC_NFE_MAF|ExAC_OTH_MAF|ExAC_SAS_MAF|CLIN_SIG|SOMATIC|PHENO|PUBMED|MOTIF_NAME|MOTIF_POS|HIGH_INF_POS|MOTIF_SCORE_CHANGE|LoF|LoF_filter|LoF_flags|LoF_info'.split('|')
+
+        vcf = VCF(vcf_path)
+
         variant_ls = []
-        import tabix #putting import here for now because it doesn't work on local machine
-        tb = tabix.open(vcf_path)
-        #TODO cast seqid in parse_args
-        #for idx,r in enumerate(tb.query(str(seqid),start-1400000,end-1400000)):
-        for idx,r in enumerate(tb.query(str(seqid),start,end)):
-            #variant_ls.append(dict(pos=int(r[1])+1400000, compact_pos=-1, ref=r[3], alt=r[4], #adding 1.4m bc this vcf is on old build
-            variant_ls.append(dict(pos=int(r[1]), compact_pos=-1, ref=r[3], alt=r[4],
-                              annotation=r[7].split(';')[-1].split('|')[1], severity=r[7].split(';')[-1].split('|')[2],
-                              allele_count=int(r[7].split(';')[0].split('=')[1]),
-                              allele_number=int(r[7].split(';')[1].split('=')[1]),
-                              allele_frequency=float(r[7].split(';')[2].split('=')[1])))
+
+        for v in vcf('{}:{}-{}'.format(seqid,start,end)):
+
+            vep = v.INFO['vep']
+            impact_strings = vep.split(",")
+
+            impacts = [VEP(impact_string, keys=vep_keys) for impact_string in impact_strings]
+            top = Effect.top_severity(impacts)
+
+            try: ann = top[0]
+            except: ann = top
+
+            variant_ls.append(dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,
+                    annotation=ann.gene, severity=ann.impact_severity,
+                    allele_count=v.INFO.get('AC'),
+                    allele_number=v.INFO.get('AN'),
+                    allele_frequency=v.INFO.get('AF')))
+
         return variant_ls
 
     def get_variants_csv(csv_path):
@@ -42,11 +65,9 @@ def get_variants(filepath, start, end, seqid):
         return variant_ls
 
     def get_variants_bed(bed_path):
-        import tabix #putting import here for now because it doesn't work on local machine
         variant_ls = []
         tb = tabix.open(bed_path)
         #TODO cast seqid in parse_args
-        #for idx,r in enumerate(tb.query(str(seqid),start-1400000,end-1400000)):
         for r in tb.query(str(seqid),start,end):
             variant_ls.append(dict(pos=int(r[1]), compact_pos=-1, ref=r[3], alt=r[4], #adding 1.4m bc this bed is on old build
                              annotation=r[8], severity=variant_type(r[8]),
@@ -89,7 +110,6 @@ def get_line(filepath,chr_num=-1):
 
     fi.close()
     return line_coords
-
 
 def get_track(user_track_params, track_name, strand='-'):
     boxes = []

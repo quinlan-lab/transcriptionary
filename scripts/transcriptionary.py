@@ -134,6 +134,7 @@ def parse_args():
     ### TRACKS ###
     for track_name in user_track_params:
         track_db = gff_to_db(user_track_params[track_name]['gtf_path'], user_track_params[track_name]['gtf_path'] + '.db')
+        # track_db = gff_to_db(user_track_params[track_name]['gtf_path'], user_track_params[track_name]['gtf_path'])
         user_track_params[track_name]['db'] = track_db
     with open('default_colors/palettes.yaml') as f:
         palettes = list(yaml.load_all(f, Loader=SafeLoader))[0]
@@ -154,13 +155,11 @@ def parse_args():
 
 def transcriptionary():
     plot_params, variant_params, user_track_params, user_line_params, transcript_IDs, output = parse_args()
-    # 'test.db' to make sure .db does not accidentally get overwritten during development    
-    gff_db = gff_to_db(plot_params['gff_path'],plot_params['gff_path']+'test.db')
+    gff_db = gff_to_db(plot_params['gff_path'],plot_params['gff_path']+'.db')
     
     gene_feature = get_gene_feature(gff_db, plot_params['gene_name'])
 
     if transcript_IDs == 'transcript_names':
-        print('db1')
         transcripts = get_transcript_dict(plot_params, gff_db, gene_feature, 'all')
         print(list(transcripts.keys()))
         exit()
