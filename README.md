@@ -14,6 +14,10 @@ UTRs, direction arrows, and lollipops, tracks, and coordinate-based information 
 
 Click on any exon to expand it. Click on any white space to revert the plot.
 
+
+## Demo Plot
+https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
+
 ## Arguments
 
 `config_file` (required): user-defined parameters (sample config file at test/test.yaml)
