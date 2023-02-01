@@ -46,21 +46,23 @@ variant_severity_colors:
 ---
 ###User defined tracks:
 
-domains:
+pfam_domains:
     gtf_path: 'test/data/chr20.pfam.sorted.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db; if not database, database will be created for you
     seqid: chr20
     colors: #leave empty to color all randomly
         Ion_trans: '#f3722c' #color these boxes as specified, any unspecified boxes colored randomly
         KCNQC3-Ank-G_bd: '#A09BE7'
 
-domains2:
+ucsc_repeats:
     seqid: chr20
-    gtf_path: 'test/data/chr20.pfam.sorted.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
-#    colors: #leave empty to color all randomly
+    gtf_path: 'test/data/ucsc_repeats_grch38.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
+    colors:
+        trf: '#7d1128'
 
-domains3:
+ucsc_zebrafish_chain:
+    gtf_path: 'test/data/ucsc_zebrafish_chain.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
     seqid: chr20
-    gtf_path: 'test/data/chr20.pfam.sorted.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
+    
 ...
 ---
 ###User defined axes:
