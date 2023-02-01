@@ -68,9 +68,8 @@ def constraint_view_plot(plot_params, variant_params, user_line_params, transcri
 
     for idx,track_name in enumerate(user_tracks):
         project_coords.map_box(user_tracks[track_name], transcript_dict['exons'])
-
         tooltips_tracks = [('Name','@track_names'), ('Start (adjusted)', '@adj_start'), ('End (adjusted)', '@adj_end'), 
-                          ('Start (true)', '@true_start'), ('End (true)', '@true_end'), ('Length', '@true_len')]
+                          ('Start (true)', '@true_start'), ('End (true)', '@true_end'), ('Length', '@true_len'), ('Strand', '@strand')]
         
         y = ((h*1.5)*(len(user_tracks) - idx - 1)+(h))
         track_glyph = add_track_glyph(plot, user_tracks[track_name], h*0.9, y)

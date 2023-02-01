@@ -230,6 +230,7 @@ def add_variant_glyph(plot_params, variant_params, plot, variant_ls, line_width=
 
 def add_track_glyph(plot, tracks, height, y_pos):
     tracks = [di for di in tracks if di['compact_start']>=0]
+    if not tracks: tracks = [{'ID': 'empty track', 'start': 0, 'end': 0, 'compact_start': 0, 'compact_end': 0, 'color': '#111111', 'strand': ''}]
     tracks = sorted(tracks, key=lambda di: di['end']-di['start'], reverse=True) #make sure smaller tracks are in front of larger tracks
     tracks_compact = [(di['compact_start'], di['compact_end']) for di in tracks]
     tracks_original = [(di['start'], di['end']) for di in tracks]
@@ -248,11 +249,13 @@ def add_track_glyph(plot, tracks, height, y_pos):
     true_start = [start for (start, end) in tracks_original]
     true_end = [end for (start, end) in tracks_original]
     true_len = [end - start + 1 for (start, end) in tracks_original]  # +1 for 1 indexed coords
+    strand = [di['strand'] for di in tracks]
 
     source = ColumnDataSource(dict(x=x, y=y, w=w, h=h, colors=colors, hover_colors=hover_colors,
                                    track_names=track_names,
                                    adj_start=adj_start, adj_end=adj_end,
-                                   true_len=true_len, true_start=true_start, true_end=true_end))
+                                   true_len=true_len, true_start=true_start, true_end=true_end,
+                                   strand=strand))
 
     track_glyph = plot.rect(source=source, x='x', y='y', width='w', height='h', height_units='screen',
                              fill_color='colors', line_color='colors')

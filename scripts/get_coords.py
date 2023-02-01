@@ -111,13 +111,13 @@ def get_line(filepath,chr_num=-1):
     fi.close()
     return line_coords
 
-def get_track(user_track_params, track_name, strand='-'):
+def get_track(user_track_params, track_name):
     boxes = []
     db = user_track_params[track_name]['db']
     seqid = user_track_params[track_name]['seqid']
     for s in list(db.region(seqid=seqid, featuretype='exon')):
         box_dict = dict(ID=s['gene_id'][0], start=s.start, end=s.end, compact_start=-1,
-                        compact_end=-1)  # more than one gene name?
+                        compact_end=-1, strand=s.strand)  # more than one gene name?
         boxes.append(box_dict)
 
     return boxes
