@@ -108,14 +108,14 @@ def add_intron_glyph(plot_params, plot, introns, fill_alpha=1, width=14):
                                    true_len=true_len, true_start=true_start, true_end=true_end))
 
     color = plot_params['glyph_colors']['intron']
-    hover_color = lighten_hex_color(color, 50)
+    hover_color = lighten_hex_color(color, 30)
 
     glyph = Rect(x='x', y='y', width='w', height='h', height_units='screen', fill_color=color, fill_alpha=fill_alpha,
                  line_color=color)
     hover_glyph = Rect(x='x', y='y', width='w', height='h', height_units='screen', fill_color=hover_color,
                        fill_alpha=fill_alpha, line_color=hover_color)
 
-    return plot.add_glyph(source, glyph, hover_glyph=hover_glyph)
+    return plot.add_glyph(source, glyph, hover_glyph=hover_glyph, nonselection_glyph=None)
 
 
 def add_UTR_glyph(plot_params, plot, UTRs, fill_alpha=0.4):
