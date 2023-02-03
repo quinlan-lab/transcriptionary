@@ -96,7 +96,7 @@ def get_line(filepath,chr_num=-1):
     
     #boxes: <chr>\t<start>\t<end>\t<y>
     if filepath.split('.')[-1] == 'bedgraph' or len(line_coords[0]) == 4:
-        line_coords = [{'chrom': int(chrom),'start': int(start), 'end': int(end), 'y': float(y)} for (chrom, start, end, y) in line_coords]
+        line_coords = [{'chrom': chrom,'start': int(start), 'end': int(end), 'y': float(y)} for (chrom, start, end, y) in line_coords]
         if chr_num >= 0: coords = [coord for coord in line_coords if coord['chrom']==chr_num]
             
     elif filepath.split('.')[-1] == 'txt':

@@ -1,6 +1,6 @@
 from process_gene_gff import gff_to_db, get_gene_feature, get_transcript_dict
 from get_coords import get_variants,get_line,get_track
-from map_coords import map_line
+# from map_coords import 
 from colors import color_boxes, color_variants
 from axes import add_user_axis,add_variant_axis
 from glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph
@@ -86,11 +86,12 @@ def constraint_view_plot(plot_params, variant_params, user_line_params, transcri
         all_xs = []
         all_ys = []
         for line in user_line_params[axis_name]['lines']:
-                xs_ls,ys_ls = map_line(user_lines[axis_name][line], transcript_dict['exons'])
+                xs_ls,ys_ls = project_coords.map_line(user_lines[axis_name][line], transcript_dict['exons'], user_line_params[axis_name]['lines'][line]['seqid'])
                 all_xs.append(xs_ls)
                 all_ys.append(ys_ls)
-        y_max = max([item for sublist in list(np.array(all_ys,dtype=object).flat) for item in sublist])
-        
+        try: y_max = max([i for s in [i for s in all_ys for i in s] for i in s]) #flatten 3D list to 1D list to take max
+        except: continue
+
         for idx,line in enumerate(user_line_params[axis_name]['lines']):
             line_params=user_line_params[axis_name]['lines'][line]
             line_glyph = add_multi_line_glyph(plot_params, plot, all_xs[idx], all_ys[idx], max_y=y_max, y0=plot_params['y0'], fill_area=line_params['fill_area'], line_color=line_params['color'], line_alpha=line_params['alpha'])

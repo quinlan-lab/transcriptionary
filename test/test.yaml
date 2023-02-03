@@ -78,6 +78,7 @@ Coverage:
         Coverage:
             #line params
             filepath: 'test/data/coverage.bedgraph'
+            seqid: '20'
             color: '#00916E'
             alpha: 0.5
             fill_area: True
@@ -91,11 +92,13 @@ Mutation counts:
     lines:
         Expected mutation counts: 
             filepath: 'test/data/expected_mut_counts.txt'
+            seqid: 'chr20'
             color: '#f26419'
             alpha: 1
             fill_area: False
         Observed mutation counts:
             filepath: 'test/data/observed_mut_counts.txt'
+            seqid: 'chr20'
             color: '#19a7f2'
             alpha: 1
             fill_area: False
