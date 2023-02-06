@@ -92,21 +92,22 @@ def get_variants(filepath, start, end, seqid):
 
 def get_line(filepath,chr_num=-1):
     fi = open(filepath,'r')
-    line_coords = [line.strip().split('\t') for line in fi.readlines()]
-    
-    #boxes: <chr>\t<start>\t<end>\t<y>
-    if filepath.split('.')[-1] == 'bedgraph' or len(line_coords[0]) == 4:
+    ext = filepath.split('.')[-1]
+
+    if ext == 'bedgraph' or ext == 'tsv':
+        line_coords = [line.strip().split('\t') for line in fi.readlines()]
+    elif ext == 'csv':
+        line_coords = [line.strip().split(',') for line in fi.readlines()]
+    else:
+        raise ValueError('Invalid file format: ' + filepath)
+
+    if ext == 'bedgraph':
         line_coords = [{'chrom': chrom,'start': int(start), 'end': int(end), 'y': float(y)} for (chrom, start, end, y) in line_coords]
         if chr_num >= 0: coords = [coord for coord in line_coords if coord['chrom']==chr_num]
-            
-    elif filepath.split('.')[-1] == 'txt':
-        if len(line_coords[0]) == 3:
-            line_coords = [{'chrom': chrom, 'pos': float(x), 'y': float(y)} for (chrom, x, y) in line_coords]
-            if chr_num >= 0: coords = [coord for coord in line_coords if coord['chrom']==chr_num]
-        elif len(line_coords[0]) == 2:
-            line_coords = [{'chrom': -1, 'pos': float(x), 'y': float(y)} for (x, y) in line_coords]
-        else:
-            raise ValueError('Invalid file format')
+
+    elif ext == 'tsv' or ext == 'csv':
+        line_coords = [{'chrom': chrom, 'pos': float(x), 'y': float(y)} for (chrom, x, y) in line_coords]
+        if chr_num >= 0: coords = [coord for coord in line_coords if coord['chrom']==chr_num]
 
     fi.close()
     return line_coords

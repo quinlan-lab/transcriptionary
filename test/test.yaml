@@ -2,7 +2,7 @@
 ###Data params
 gff_path: 'test/data/test.gff3'  #if not database file, database will be created for you
 # variant_path: 'test/gnomAD_v3.1.1_ENSG00000075043_2021_09_16_16_02_28.csv'
-variant_path: 'test/data/gnomad.exomes.chr20.subset.vcf.gz'
+# variant_path: 'test/data/gnomad.exomes.chr20.subset.vcf.gz'
 
 ####Plot params
 gene_name: 'KCNQ2'
@@ -29,6 +29,8 @@ track_palette: 'blues' #palette to draw random track colors from; can be any one
 ---
 #variants
 plot_variants: True
+variant_path: 'test/data/gnomad.exomes.chr20.subset.vcf.gz'
+
 seqid: chr20 #for .vcf
 #seqid: chr20 #for .bed
 min_lollipop_height: 15
@@ -47,7 +49,7 @@ variant_severity_colors:
 ###User defined tracks:
 
 pfam_domains:
-    gtf_path: 'test/data/chr20.pfam.sorted.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db; if not database, database will be created for you
+    gtf_path: 'test/data/chr20.pfam.sorted.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db; if not database, database will be created for you
     seqid: chr20
     colors: #leave empty to color all randomly
         Ion_trans: '#f3722c' #color these boxes as specified, any unspecified boxes colored randomly
@@ -55,12 +57,12 @@ pfam_domains:
 
 ucsc_repeats:
     seqid: chr20
-    gtf_path: 'test/data/ucsc_repeats_grch38.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
+    gtf_path: 'test/data/ucsc_repeats_grch38.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db
     colors:
         trf: '#7d1128'
 
 ucsc_zebrafish_chain:
-    gtf_path: 'test/data/ucsc_zebrafish_chain.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
+    gtf_path: 'test/data/ucsc_zebrafish_chain.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db
     seqid: chr20
     
 ...
@@ -91,13 +93,13 @@ Mutation counts:
     smoothing_slider: True
     lines:
         Expected mutation counts: 
-            filepath: 'test/data/expected_mut_counts.txt'
+            filepath: 'test/data/expected_mut_counts.csv'
             seqid: 'chr20'
             color: '#f26419'
             alpha: 1
             fill_area: False
         Observed mutation counts:
-            filepath: 'test/data/observed_mut_counts.txt'
+            filepath: 'test/data/observed_mut_counts.tsv'
             seqid: 'chr20'
             color: '#19a7f2'
             alpha: 1
