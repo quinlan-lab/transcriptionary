@@ -1,8 +1,8 @@
 #colors can be RGB (#xxxxxx or xxxxxx), or named colors from named_colors.yaml
-reds: [
-  'red salsa', 'orange red', 'maroon', 'irresistible', 'big dip oruby', 'rust', 'rose madder', 'carmine', 'vermillion', 'burgundy',
-]
+bang_wong_palette: ['#000000', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7']
 
-blues: [
-  'zomp', 'queen blue', 'medium slate blue', 'purple navy', 'ocean blue', 'indigo dye', 'wild blue yonder', 'oxford blue', 'dark sky blue', 'charcoal',
-]
+paul_tol_palette: ['#332288', '#117733', '#44AA99', '#88CCEE', '#DDCC77', '#CC6677', '#AA4499', '#882255']
+
+reds: ['red salsa', 'orange red', 'maroon', 'irresistible', 'big dip oruby', 'rust', 'rose madder', 'carmine', 'vermillion', 'burgundy']
+
+blues: ['zomp', 'queen blue', 'medium slate blue', 'purple navy', 'ocean blue', 'indigo dye', 'wild blue yonder', 'oxford blue', 'dark sky blue', 'charcoal']

@@ -23,7 +23,7 @@ glyph_colors:
     UTR: '#969696'
     variant: 'charcoal' #default lollipop color if no severity information
 
-track_palette: 'blues' #palette to draw random track colors from; can be any one palette in palettes.yaml
+track_palette: 'bang_wong_palette' #palette to draw random track colors from; can be any one palette in palettes.yaml
 ...
 ---
 #variants
@@ -59,7 +59,7 @@ ucsc_repeats:
     seqid: chr20
     gtf_path: 'test/data/ucsc_repeats_grch38.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
     colors:
-        trf: '#7d1128'
+        trf: '#000000'
 
 ucsc_zebrafish_chain:
     gtf_path: 'test/data/ucsc_zebrafish_chain.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db

@@ -146,7 +146,7 @@ def parse_args():
         user_track_params[track_name]['db'] = track_db
     with open('default_colors/palettes.yaml') as f:
         palettes = list(yaml.load_all(f, Loader=SafeLoader))[0]
-    track_colors = [named_colors[c] for c in palettes[plot_params['track_palette']]]
+    track_colors = [c if '#' in c else named_colors[c] for c in palettes[plot_params['track_palette']]]
     plot_params['track_colors'] = track_colors
 
     ### TRANSCRIPTS ###
@@ -175,7 +175,6 @@ def transcriptionary():
     transcripts = get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs)
     transcript_IDs = list(transcripts.keys()) #if 'all', transcript_IDs will become list of transcript names; if nonexistent IDs they are removed
     
-    # variant_ls = get_variants(variant_params['variant_path'], gene_feature.start, gene_feature.end, variant_params['seqid']) if variant_params['plot_variants'] else []
     variant_ls = get_variants(variant_params, gene_feature.start, gene_feature.end) if variant_params['plot_variants'] else []
     color_variants(plot_params, variant_params, variant_ls)
     user_tracks = {track_name: get_track(user_track_params, track_name) for track_name in user_track_params}
