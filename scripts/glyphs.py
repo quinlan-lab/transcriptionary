@@ -199,6 +199,8 @@ def add_variant_glyph(plot_params, variant_params, plot, variant_ls, line_width=
                                    sev=[v['severity'] for v in variant_ls],
                                    colors=colors, hover_colors=hover_colors, line_alpha=[1 for v in variant_ls])
 
+    for info_field in variant_params['info_annotations']: cds_dict[info_field] = [v[info_field] for v in variant_ls]
+
     if variant_params['add_variant_axis']:
         y1_ci_li_ct, y1_sg_li_ct = get_y1(lambda x: x, allele_counts)
         y1_ci_lg_ct, y1_sg_lg_ct = get_y1(lambda x: np.log10(x) if x > 0 else 0, allele_counts)

@@ -20,7 +20,11 @@ def variant_type(annotation):
     #print('No classification for variant type {}; classified as "other"'.format(annotation))
     return 'MODIFIER'
 
-def get_variants(filepath, start, end, seqid):
+# def get_variants(filepath, start, end, seqid):
+def get_variants(variant_params, start, end):
+    filepath = variant_params['variant_path']
+    seqid = variant_params['seqid']
+
     def get_variants_vcf(vcf_path):
 
         from cyvcf2 import VCF
@@ -43,11 +47,15 @@ def get_variants(filepath, start, end, seqid):
             try: ann = top[0]
             except: ann = top
 
-            variant_ls.append(dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,
+            di_variant = dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,            
                     annotation=ann.gene, severity=ann.impact_severity,
                     allele_count=v.INFO.get('AC'),
                     allele_number=v.INFO.get('AN'),
-                    allele_frequency=v.INFO.get('AF')))
+                    allele_frequency=v.INFO.get('AF'))
+
+            for info_field in variant_params['info_annotations']: di_variant[info_field] = v.INFO.get(info_field)
+
+            variant_ls.append(di_variant)
 
         return variant_ls
 

@@ -29,10 +29,13 @@ def constraint_view_plot(plot_params, variant_params, user_line_params, transcri
     if variant_ls:
         project_coords.map_point(variant_ls, transcript_dict['exons'])
         ray_glyph,circle_glyph,allele_counts,allele_frequencies = add_variant_glyph(plot_params, variant_params, plot, variant_ls)
+
         if ray_glyph and circle_glyph:
             tooltips_variations = [('Position (compact)', '@x'), ('Position (chr)', '@pos'), 
                                    ('Allele count', '@allele_counts'), ('Allele number', '@allele_numbers'), ('Allele frequency', '@allele_frequencies'), 
                                    ('Change', '@ref > @alt'), ('VEP Annotation', '@ann'), ('Severity', '@sev')]
+            tooltips_variations.extend([(info_field, '@'+info_field) for info_field in variant_params['info_annotations']]) #add user defined INFO fields to hover box annotation
+
             plot.add_tools(HoverTool(tooltips=tooltips_variations, renderers=[circle_glyph,ray_glyph], point_policy='follow_mouse', attachment='below'))
         glyph_dict['Variant'].extend([ray_glyph,circle_glyph])
         
@@ -131,6 +134,11 @@ def parse_args():
         color = plot_params['glyph_colors'][glyph_type]
         if color[0] != "#": plot_params['glyph_colors'][glyph_type] = named_colors[color]
 
+    ### VARIANTS ###
+    try: #if info_annotations empty or nonexistent, set to empty list
+        if not variant_params['info_annotations']: variant_params['info_annotations'] = []
+    except: variant_params['info_annotations'] = []
+
     ### TRACKS ###
     for track_name in user_track_params:
         track_db = gff_to_db(user_track_params[track_name]['gtf_path'], user_track_params[track_name]['gtf_path'] + '.db')
@@ -167,7 +175,8 @@ def transcriptionary():
     transcripts = get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs)
     transcript_IDs = list(transcripts.keys()) #if 'all', transcript_IDs will become list of transcript names; if nonexistent IDs they are removed
     
-    variant_ls = get_variants(plot_params['variant_path'], gene_feature.start, gene_feature.end, variant_params['seqid']) if variant_params['plot_variants'] else []
+    # variant_ls = get_variants(variant_params['variant_path'], gene_feature.start, gene_feature.end, variant_params['seqid']) if variant_params['plot_variants'] else []
+    variant_ls = get_variants(variant_params, gene_feature.start, gene_feature.end) if variant_params['plot_variants'] else []
     color_variants(plot_params, variant_params, variant_ls)
     user_tracks = {track_name: get_track(user_track_params, track_name) for track_name in user_track_params}
     for track_name in user_tracks: color_boxes(plot_params, user_track_params, track_name, user_tracks[track_name])
