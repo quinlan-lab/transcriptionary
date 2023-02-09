@@ -13,16 +13,11 @@ def variant_type(annotation):
     #print('No classification for variant type {}; classified as "other"'.format(annotation))
     return 'MODIFIER'
 
-# def get_variants(filepath, start, end, seqid):
 def get_variants(variant_params, transcripts, start, end):
     filepath = variant_params['variant_path']
     seqid = variant_params['seqid']
 
-    # print(transcripts)
-
     transcript_IDs = [transcripts[key]['ID'].split(':')[-1] for key in transcripts]
-    # print([t for t in transcripts])
-    # print(transcripts)
 
     def get_variants_vcf(vcf_path):
 
@@ -39,45 +34,31 @@ def get_variants(variant_params, transcripts, start, end):
             vep = v.INFO[variant_params['vep']['field_name']]
             impact_strings = vep.split(",")
 
-            impacts = [VEP(impact_string, keys=vep_keys) for impact_string in impact_strings]
-            top = Effect.top_severity(impacts)
-
-            # print(impact_strings)
-
-            try: ann = top[0]
-            except: ann = top
-
-            # di_variant = dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,            
-            #         annotation=ann.gene, severity=ann.impact_severity,
-            #         allele_count=v.INFO.get('AC'),
-            #         allele_number=v.INFO.get('AN'),
-            #         allele_frequency=v.INFO.get('AF'))
-
             di_variant = dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,            
-                    annotation=ann.gene,
                     allele_count=v.INFO.get('AC'),
                     allele_number=v.INFO.get('AN'),
                     allele_frequency=v.INFO.get('AF'))
 
             for info_field in variant_params['info_annotations']: di_variant[info_field] = v.INFO.get(info_field)
 
+            for vep_field in variant_params['vep']['vep_fields']:
+                for transcript_ID in transcript_IDs:
+                    transcript_impact_string = [s for s in impact_strings if transcript_ID in s]
+                    if len(transcript_impact_string) > 1: print('Warning: more than one VEP impact string with transcript ID {}; using first impact string'.format(transcript_ID))
+                    if len(transcript_impact_string) == 0: 
+                        di_variant[transcript_ID + '_' + vep_field] = 'None'
+                    else: 
+                        transcript_impact_string = transcript_impact_string[0]
+                        di_variant[transcript_ID + '_' + vep_field] = VEP(transcript_impact_string, keys=vep_keys).effects.get(vep_field, 'None')
+
             for transcript_ID in transcript_IDs:
-                # print(transcript_ID)
                 transcript_impact_string = [s for s in impact_strings if transcript_ID in s]
+                if len(transcript_impact_string) > 1: print(transcript_impact_string)
                 if len(transcript_impact_string) == 0: 
                     di_variant[transcript_ID + '_severity'] = 'NONE'
                 else: 
                     transcript_impact_string = transcript_impact_string[0]
                     di_variant[transcript_ID + '_severity'] = VEP(transcript_impact_string, keys=vep_keys).impact_severity
-            #     TODO len > 1
-            # print(impacts)
-            # print(top)
-
-            
-
-
-
-            
 
             variant_ls.append(di_variant)
 

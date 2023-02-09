@@ -24,19 +24,22 @@ def constraint_view_plot(plot_params, variant_params, user_line_params, transcri
     plot.grid.grid_line_color = None
     plot.toolbar.active_drag = None
     plot.yaxis[0].visible = False
+
+    transcript_ID = transcript_dict['ID'].split(':')[-1]
     
     ### VARIANTS ###
     if variant_ls:
         project_coords.map_point(variant_ls, transcript_dict['exons'])
-        ray_glyph,circle_glyph,allele_counts,allele_frequencies = add_variant_glyph(plot_params, variant_params, transcript_dict['ID'].split(':')[-1], plot, variant_ls)
+        ray_glyph,circle_glyph,allele_counts,allele_frequencies = add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls)
 
         if ray_glyph and circle_glyph:
-            tooltips_variations = [('Position (compact)', '@x'), ('Position (chr)', '@pos'), 
+            tooltips_variants = [('Position (compact)', '@x'), ('Position (chr)', '@pos'), 
                                    ('Allele count', '@allele_counts'), ('Allele number', '@allele_numbers'), ('Allele frequency', '@allele_frequencies'), 
-                                   ('Change', '@ref > @alt'), ('VEP Annotation', '@ann'), ('Severity', '@sev')]
-            tooltips_variations.extend([(info_field, '@'+info_field) for info_field in variant_params['info_annotations']]) #add user defined INFO fields to hover box annotation
+                                   ('Change', '@ref > @alt'), ('Severity', '@sev')]
+            tooltips_variants.extend([(info_field, '@'+info_field) for info_field in variant_params['info_annotations']]) #add user defined INFO fields to hover box annotation
+            tooltips_variants.extend([(vep_field, '@'+vep_field) for vep_field in variant_params['vep']['vep_fields']]) #add user defined VEP field to hover box annotation
 
-            plot.add_tools(HoverTool(tooltips=tooltips_variations, renderers=[circle_glyph,ray_glyph], point_policy='follow_mouse', attachment='below'))
+            plot.add_tools(HoverTool(tooltips=tooltips_variants, renderers=[circle_glyph,ray_glyph], point_policy='follow_mouse', attachment='below'))
         glyph_dict['Variant'].extend([ray_glyph,circle_glyph])
         
         if variant_params['add_variant_axis']:
@@ -73,6 +76,8 @@ def constraint_view_plot(plot_params, variant_params, user_line_params, transcri
         project_coords.map_box(user_tracks[track_name], transcript_dict['exons'])
         tooltips_tracks = [('Name','@track_names'), ('Start (adjusted)', '@adj_start'), ('End (adjusted)', '@adj_end'), 
                           ('Start (true)', '@true_start'), ('End (true)', '@true_end'), ('Length', '@true_len'), ('Strand', '@strand')]
+
+        
         
         y = ((h*1.5)*(len(user_tracks) - idx - 1)+(h))
         track_glyph = add_track_glyph(plot, user_tracks[track_name], h*0.9, y)
