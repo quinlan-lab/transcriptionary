@@ -1,7 +1,7 @@
 from process_gene_gff import gff_to_db, get_gene_feature, get_transcript_dict
 from get_coords import get_variants,get_line,get_track
 # from map_coords import 
-from colors import color_boxes, color_variants
+from colors import color_boxes
 from axes import add_user_axis,add_variant_axis
 from glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph
 from widget_callbacks import add_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom
@@ -28,7 +28,7 @@ def constraint_view_plot(plot_params, variant_params, user_line_params, transcri
     ### VARIANTS ###
     if variant_ls:
         project_coords.map_point(variant_ls, transcript_dict['exons'])
-        ray_glyph,circle_glyph,allele_counts,allele_frequencies = add_variant_glyph(plot_params, variant_params, plot, variant_ls)
+        ray_glyph,circle_glyph,allele_counts,allele_frequencies = add_variant_glyph(plot_params, variant_params, transcript_dict['ID'].split(':')[-1], plot, variant_ls)
 
         if ray_glyph and circle_glyph:
             tooltips_variations = [('Position (compact)', '@x'), ('Position (chr)', '@pos'), 
@@ -174,9 +174,7 @@ def transcriptionary():
 
     transcripts = get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs)
     transcript_IDs = list(transcripts.keys()) #if 'all', transcript_IDs will become list of transcript names; if nonexistent IDs they are removed
-    
-    variant_ls = get_variants(variant_params, gene_feature.start, gene_feature.end) if variant_params['plot_variants'] else []
-    color_variants(plot_params, variant_params, variant_ls)
+    variant_ls = get_variants(variant_params, transcripts, gene_feature.start, gene_feature.end) if variant_params['plot_variants'] else []
     user_tracks = {track_name: get_track(user_track_params, track_name) for track_name in user_track_params}
     for track_name in user_tracks: color_boxes(plot_params, user_track_params, track_name, user_tracks[track_name])
     user_lines = {axis_name:{} for axis_name in user_line_params}

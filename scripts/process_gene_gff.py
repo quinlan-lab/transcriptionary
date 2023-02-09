@@ -55,5 +55,5 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
         direction = t.strand if plot_params['plot_direction'] else ''
         tname = t['Name'][0]
         UTRs = get_UTRs(t)
-        transcript_dict[tname] = dict(ID=t['ID'], chr_num=chr_num, exons=exon_coords, direction=direction, UTRs=UTRs)
+        transcript_dict[tname] = dict(ID=t['ID'][0], chr_num=chr_num, exons=exon_coords, direction=direction, UTRs=UTRs)
     return transcript_dict

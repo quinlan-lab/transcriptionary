@@ -1,13 +1,6 @@
 import csv
 import tabix
 
-import itertools as it
-try:
-    izip = it.izip
-except AttributeError:
-    izip = zip
-    basestring = str
-
 def variant_type(annotation):
     if annotation in ['synonymous_variant']:
         return 'LOW'
@@ -21,39 +14,70 @@ def variant_type(annotation):
     return 'MODIFIER'
 
 # def get_variants(filepath, start, end, seqid):
-def get_variants(variant_params, start, end):
+def get_variants(variant_params, transcripts, start, end):
     filepath = variant_params['variant_path']
     seqid = variant_params['seqid']
+
+    # print(transcripts)
+
+    transcript_IDs = [transcripts[key]['ID'].split(':')[-1] for key in transcripts]
+    # print([t for t in transcripts])
+    # print(transcripts)
 
     def get_variants_vcf(vcf_path):
 
         from cyvcf2 import VCF
         from geneimpacts import VEP, Effect
 
-        vep_keys = 'Allele|Consequence|IMPACT|SYMBOL|Gene|Feature_type|Feature|BIOTYPE|EXON|INTRON|HGVSc|HGVSp|cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|Existing_variation|ALLELE_NUM|DISTANCE|STRAND|FLAGS|VARIANT_CLASS|MINIMISED|SYMBOL_SOURCE|HGNC_ID|CANONICAL|TSL|APPRIS|CCDS|ENSP|SWISSPROT|TREMBL|UNIPARC|GENE_PHENO|SIFT|PolyPhen|DOMAINS|HGVS_OFFSET|GMAF|AFR_MAF|AMR_MAF|EAS_MAF|EUR_MAF|SAS_MAF|AA_MAF|EA_MAF|ExAC_MAF|ExAC_Adj_MAF|ExAC_AFR_MAF|ExAC_AMR_MAF|ExAC_EAS_MAF|ExAC_FIN_MAF|ExAC_NFE_MAF|ExAC_OTH_MAF|ExAC_SAS_MAF|CLIN_SIG|SOMATIC|PHENO|PUBMED|MOTIF_NAME|MOTIF_POS|HIGH_INF_POS|MOTIF_SCORE_CHANGE|LoF|LoF_filter|LoF_flags|LoF_info'.split('|')
-
         vcf = VCF(vcf_path)
+        vep_keys = vcf.get_header_type(variant_params['vep']['field_name'])['Description'].strip('"').split('Format: ')[-1].split('|')
 
         variant_ls = []
 
         for v in vcf('{}:{}-{}'.format(seqid,start,end)):
 
-            vep = v.INFO['vep']
+            vep = v.INFO[variant_params['vep']['field_name']]
             impact_strings = vep.split(",")
 
             impacts = [VEP(impact_string, keys=vep_keys) for impact_string in impact_strings]
             top = Effect.top_severity(impacts)
 
+            # print(impact_strings)
+
             try: ann = top[0]
             except: ann = top
 
+            # di_variant = dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,            
+            #         annotation=ann.gene, severity=ann.impact_severity,
+            #         allele_count=v.INFO.get('AC'),
+            #         allele_number=v.INFO.get('AN'),
+            #         allele_frequency=v.INFO.get('AF'))
+
             di_variant = dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,            
-                    annotation=ann.gene, severity=ann.impact_severity,
+                    annotation=ann.gene,
                     allele_count=v.INFO.get('AC'),
                     allele_number=v.INFO.get('AN'),
                     allele_frequency=v.INFO.get('AF'))
 
             for info_field in variant_params['info_annotations']: di_variant[info_field] = v.INFO.get(info_field)
+
+            for transcript_ID in transcript_IDs:
+                # print(transcript_ID)
+                transcript_impact_string = [s for s in impact_strings if transcript_ID in s]
+                if len(transcript_impact_string) == 0: 
+                    di_variant[transcript_ID + '_severity'] = 'NONE'
+                else: 
+                    transcript_impact_string = transcript_impact_string[0]
+                    di_variant[transcript_ID + '_severity'] = VEP(transcript_impact_string, keys=vep_keys).impact_severity
+            #     TODO len > 1
+            # print(impacts)
+            # print(top)
+
+            
+
+
+
+            
 
             variant_ls.append(di_variant)
 

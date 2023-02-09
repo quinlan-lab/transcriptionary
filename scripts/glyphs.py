@@ -1,6 +1,6 @@
 import numpy as np
 from bokeh.models import ColumnDataSource, Rect, Segment, Circle, MultiPolygons
-from colors import lighten_hex_color
+from colors import  color_variants,lighten_hex_color
 
 def center_feature(feature):
     center = feature[0] + (feature[1] - feature[0])/2
@@ -149,7 +149,7 @@ def add_UTR_glyph(plot_params, plot, UTRs, fill_alpha=0.4):
 
     return plot.add_glyph(source, glyph, hover_glyph=hover_glyph)
 
-def add_variant_glyph(plot_params, variant_params, plot, variant_ls, line_width=2):
+def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls, line_width=2):
     variant_ls = [v for v in variant_ls if v['compact_pos'] >= 0]
     N = len(variant_ls)
     if N == 0: 
@@ -177,6 +177,7 @@ def add_variant_glyph(plot_params, variant_params, plot, variant_ls, line_width=
         return y1_circle, y1_segment
 
     r = [variant_params['lollipop_radius']] * N
+    color_variants(plot_params, variant_params, variant_ls, transcript_ID)
     colors = [v['color'] for v in variant_ls]
 
     hover_colors = [lighten_hex_color(c, 40) for c in colors]
@@ -196,7 +197,7 @@ def add_variant_glyph(plot_params, variant_params, plot, variant_ls, line_width=
                                    ref=[v['ref'] for v in variant_ls],
                                    alt=[v['alt'] for v in variant_ls],
                                    ann=[v['annotation'] for v in variant_ls],
-                                   sev=[v['severity'] for v in variant_ls],
+                                   sev=[v[transcript_ID + '_severity'] for v in variant_ls],
                                    colors=colors, hover_colors=hover_colors, line_alpha=[1 for v in variant_ls])
 
     for info_field in variant_params['info_annotations']: cds_dict[info_field] = [v[info_field] for v in variant_ls]

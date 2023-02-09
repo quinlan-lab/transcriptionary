@@ -16,14 +16,11 @@ def lighten_hex_color(color, delta):
     new_color = '#{}{}{}'.format(r, g, b)
     return new_color
 
-def color_variants(plot_params, variant_params, variant_ls):
-    #colors = [variant_params['variant_severity_colors'][v['severity']] for v in variant_ls]
+def color_variants(plot_params, variant_params, variant_ls, transcript_ID):
     for v in variant_ls:
-        #v['color'] = variant_params['variant_severity_colors'][v['severity']]
-        if v['severity']: v['color'] = variant_params['variant_severity_colors'][v['severity']]
+        if v[transcript_ID + '_severity'] != 'NONE': v['color'] = variant_params['variant_severity_colors'][v[transcript_ID + '_severity']]
         else: v['color'] = plot_params['glyph_colors']['variant']
-
-
+        
 def color_boxes(plot_params, user_track_params, track_name, boxes):
     IDs = np.unique([b['ID'] for b in boxes])
     color_dict = {ID: random.choice(np.unique(plot_params['track_colors'])) for ID in IDs}
