@@ -1,6 +1,5 @@
 from process_gene_gff import gff_to_db, get_gene_feature, get_transcript_dict
 from get_coords import get_variants,get_line,get_track
-# from map_coords import 
 from colors import color_boxes
 from axes import add_user_axis,add_variant_axis
 from glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph
@@ -8,13 +7,13 @@ from widget_callbacks import add_checkbox,add_user_tracks_checkbox,add_user_line
 import project_coords
 import numpy as np
 import argparse
-from bokeh.plotting import figure, output_file, save
+from bokeh.plotting import figure#, output_file, save
 from bokeh.layouts import column, row, gridplot
 from bokeh.models import ColumnDataSource, Range1d, HoverTool, LabelSet
 import yaml
 from yaml.loader import SafeLoader
 
-def constraint_view_plot(plot_params, variant_params, user_line_params, transcript_dict, glyph_dict, axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
+def plot_transcript(plot_params, variant_params, user_line_params, transcript_dict, glyph_dict, axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
 
     project_coords.adjust_coordinates(transcript_dict['exons'], intron_size=plot_params['intron_size'])
     plot_height = plot_params['plot_height']    
@@ -41,10 +40,15 @@ def constraint_view_plot(plot_params, variant_params, user_line_params, transcri
 
             plot.add_tools(HoverTool(tooltips=tooltips_variants, renderers=[circle_glyph,ray_glyph], point_policy='follow_mouse', attachment='below'))
         glyph_dict['Variant'].extend([ray_glyph,circle_glyph])
-        
+
         if variant_params['add_variant_axis']:
-            axes['count'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele count', allele_counts, visible=True))
-            axes['allele_frequency'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele frequency',allele_frequencies, visible=False))
+
+            def log10(f): return np.log10(f) if f > 0 else 0
+
+            axes['count_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele count', allele_counts, visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'linear')))
+            axes['count_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele count)', [log10(c) for c in allele_counts], visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'log')))
+            axes['frequency_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele frequency', allele_frequencies, visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'linear')))
+            axes['frequency_log'].append(add_variant_axis(plot_params, variant_params, plot, '-Log(Allele frequency)', [-log10(f) for f in allele_frequencies], visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'log')))
 
     else: variant_params['add_variant_axis'] = False
 
@@ -76,8 +80,6 @@ def constraint_view_plot(plot_params, variant_params, user_line_params, transcri
         project_coords.map_box(user_tracks[track_name], transcript_dict['exons'])
         tooltips_tracks = [('Name','@track_names'), ('Start (adjusted)', '@adj_start'), ('End (adjusted)', '@adj_end'), 
                           ('Start (true)', '@true_start'), ('End (true)', '@true_end'), ('Length', '@true_len'), ('Strand', '@strand')]
-
-        
         
         y = ((h*1.5)*(len(user_tracks) - idx - 1)+(h))
         track_glyph = add_track_glyph(plot, user_tracks[track_name], h*0.9, y)
@@ -120,7 +122,7 @@ def parse_args():
     ### CONFIG ###
     config_file = args.config_file
     # TODO what to do if config file doesn't have required params?
-    if config_file[-5:] != '.yaml': raise ValueError('configuration file must be .yaml')
+    if config_file[-5:] != '.yaml': raise RuntimeError('configuration file must be .yaml')
     with open(config_file) as f:
         params = list(yaml.load_all(f, Loader=SafeLoader))
         plot_params = params[0]
@@ -147,7 +149,6 @@ def parse_args():
     ### TRACKS ###
     for track_name in user_track_params:
         track_db = gff_to_db(user_track_params[track_name]['gtf_path'], user_track_params[track_name]['gtf_path'] + '.db')
-        # track_db = gff_to_db(user_track_params[track_name]['gtf_path'], user_track_params[track_name]['gtf_path'])
         user_track_params[track_name]['db'] = track_db
     with open('default_colors/palettes.yaml') as f:
         palettes = list(yaml.load_all(f, Loader=SafeLoader))[0]
@@ -156,18 +157,19 @@ def parse_args():
 
     ### TRANSCRIPTS ###
     transcript_IDs = args.transcripts
-    #if transcript_IDs != 'all':
     if transcript_IDs not in ['all', 'transcript_names']:
         transcript_IDs = transcript_IDs.strip('[').strip(']').split(',')
         transcript_IDs = [t.strip('\'') for t in transcript_IDs]
 
     ### OUTPUT ###
-    if args.output: output = args.output + '.html' if args.output[-5:] != '.html' else args.output
-    else: output = 'plot.html'
-    return plot_params,variant_params,user_track_params,user_line_params,transcript_IDs,output
+    output_format = plot_params['output_format'].lower().strip('.')
+    if output_format not in ['html', 'png', 'svg']: raise RuntimeError('Argument output_format in {} must be HTML, PNG, or SVG'.format(config_file))
+    output = args.output + '.' + output_format if args.output[-len(output_format):] != output_format else args.output
+
+    return plot_params,variant_params,user_track_params,user_line_params,transcript_IDs,output,output_format
 
 def transcriptionary():
-    plot_params, variant_params, user_track_params, user_line_params, transcript_IDs, output = parse_args()
+    plot_params, variant_params, user_track_params, user_line_params, transcript_IDs, output, output_format = parse_args()
     gff_db = gff_to_db(plot_params['gff_path'],plot_params['gff_path']+'.db')
     
     gene_feature = get_gene_feature(gff_db, plot_params['gene_name'])
@@ -191,47 +193,63 @@ def transcriptionary():
     glyph_dict = dict(exon=[],UTRs=[],Variant=[],Direction=[])
     user_track_glyphs = {track_name:[] for track_name in user_track_params}
     user_line_glyphs = {line_name:[] for line_name in user_line_params}
-    axes = dict(count=[],allele_frequency=[])
+    axes = dict(count_linear=[],count_log=[],frequency_linear=[],frequency_log=[])
     for line_name in user_line_params:
         axes[line_name] = []
     
     for idx,ID in enumerate(transcript_IDs):
         title = 'gene={}; transcript={}/{}'.format(plot_params['gene_name'], ID, transcripts[ID]['ID'])
         if transcripts[ID]['direction']: title += ' ({})'.format(transcripts[ID]['direction'])
-        plot,glyph_dict = constraint_view_plot(plot_params, variant_params, user_line_params, transcripts[ID], glyph_dict, axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
+        plot,glyph_dict = plot_transcript(plot_params, variant_params, user_line_params, transcripts[ID], glyph_dict, axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
         plot_ls.append(plot)
-    
+
     legend = add_legend(user_line_params)
-    add_exon_zoom(plot_ls,glyph_dict)
-    checkbox = add_checkbox(plot_ls,axes,glyph_dict,plot_params, variant_params)
-    user_tracks_checkbox = add_user_tracks_checkbox(plot_ls,axes,user_track_glyphs,glyph_dict['Direction'],plot_params)
-    
-    user_line_checkboxes=[] #one checkbox per user line, so that they can be lined up with sliders
-    for axis in user_line_params:
-        user_line_checkbox = add_user_lines_checkbox(plot_ls, axes[axis], user_line_glyphs[axis], axis)
-        user_line_checkboxes.append(user_line_checkbox)
-    
-    if variant_params['plot_variants']:
-        div_type,radio_group_type,div_scale,radio_group_scale = add_linear_log_scale(axes, glyph_dict)
-    
-    sliders = []
-    for axis_name in user_line_params:
-        if user_line_params[axis_name]['smoothing_slider']:
-            fill_area_ls = [user_line_params[axis_name]['lines'][line]['fill_area'] for line in user_line_params[axis_name]['lines']]*len(plot_ls)
-            sliders.append(add_smoothing_slider(user_line_glyphs[axis_name], fill_area_ls, title='{} smoothing'.format(axis_name)))
-        else:
-            sliders.append(None)
-    
-    if variant_params['plot_variants'] and variant_params['add_variant_axis']:
-        grid1 = [[checkbox, user_tracks_checkbox],[div_type, div_scale],[radio_group_type, radio_group_scale]] 
-    else: grid1 = [[checkbox, user_tracks_checkbox]]
-    
-    lines = list(zip(user_line_checkboxes,sliders))
-    for tup in lines: grid1.append(tup)
-    grid1.append([legend])
-    grid = gridplot(grid1, toolbar_location=None)
-    
-    output_file(output)
-    save(column([grid]+plot_ls))
+
+    if output_format == 'html': #only add widgets for HTML  
+
+        from bokeh.plotting import output_file, save
+
+        add_exon_zoom(plot_ls,glyph_dict)
+        checkbox = add_checkbox(plot_ls,axes,glyph_dict,plot_params, variant_params)
+        user_tracks_checkbox = add_user_tracks_checkbox(plot_ls,axes,user_track_glyphs,glyph_dict['Direction'],plot_params)
+        
+        user_line_checkboxes=[] #one checkbox per user line, so that they can be lined up with sliders
+        for axis in user_line_params:
+            user_line_checkbox = add_user_lines_checkbox(plot_ls, axes[axis], user_line_glyphs[axis], axis)
+            user_line_checkboxes.append(user_line_checkbox)
+        
+        if variant_params['plot_variants']:
+            div_type,radio_group_type,div_scale,radio_group_scale = add_linear_log_scale(variant_params, axes, glyph_dict)
+        
+        sliders = []
+        for axis_name in user_line_params:
+            if user_line_params[axis_name]['smoothing_slider']:
+                fill_area_ls = [user_line_params[axis_name]['lines'][line]['fill_area'] for line in user_line_params[axis_name]['lines']]*len(plot_ls)
+                sliders.append(add_smoothing_slider(user_line_glyphs[axis_name], fill_area_ls, title='{} smoothing'.format(axis_name)))
+            else:
+                sliders.append(None)
+        
+        if variant_params['plot_variants'] and variant_params['add_variant_axis']:
+            grid1 = [[checkbox, user_tracks_checkbox],[div_type, div_scale],[radio_group_type, radio_group_scale]] 
+        else: grid1 = [[checkbox, user_tracks_checkbox]]
+        
+        lines = list(zip(user_line_checkboxes,sliders))
+        for tup in lines: grid1.append(tup)
+        grid1.append([legend])
+        grid = gridplot(grid1, toolbar_location=None)
+        output_file(output)
+        save(column([grid]+plot_ls))
+
+    elif output_format == 'png':
+        from bokeh.io import export_png
+        for p in plot_ls: p.toolbar_location = None
+        export_png(column([legend] + plot_ls), filename=output)
+
+    elif output_format == 'svg':
+        from bokeh.io import export_svg
+        for p in plot_ls: p.output_backend = 'svg'
+        export_svg(column([legend] + plot_ls), filename=output)
+
+
 
 transcriptionary()

@@ -3,33 +3,25 @@ from bokeh.plotting import figure
 from axes import format_ticks
 import numpy as np
 
-def add_linear_log_scale(axes, glyph_dict):
+def add_linear_log_scale(variant_params, axes, glyph_dict):
     div_type = Div(text="""Lollipop height:""", width=200, height=15)
     div_scale = Div(text="""Lollipop height scale:""", width=200, height=15)
     
     variant_type_labels = ['Allele count', 'Allele frequency']
     variant_scale_labels = ['Linear', 'Log']
-    mlo_li_ct = [ax.major_label_overrides for ax in axes['count']]
-    mlo_li_fr = [ax.major_label_overrides for ax in axes['allele_frequency']]
     
     def log10(f): return np.log10(f) if f > 0 else 0
-    #TODO
-    mlo_lg_ct = [format_ticks({key:str(log10(float(value))) for (key,value) in d.items()}, 2, False) for d in mlo_li_ct]
-    mlo_lg_fr = [format_ticks({key:str(-log10(float(value))) for (key,value) in d.items()}, 2, False) for d in mlo_li_fr]
 
-    radio_group_type = RadioGroup(labels=variant_type_labels, active=0, width=200)
-    radio_group_scale = RadioGroup(labels=variant_scale_labels, active=0, width=200)
-    
+    radio_group_type = RadioGroup(labels=variant_type_labels, active=0 if variant_params['default_y_axis'] == 'AC' else 1, width=200)
+    radio_group_scale = RadioGroup(labels=variant_scale_labels, active=0 if variant_params['default_y_axis_scale'] == 'linear' else 1, width=200)
+
     radio_group_type.js_on_click(CustomJS(args=dict(radio_group_scale=radio_group_scale,axes=axes, 
-                                                    mlo_li_ct=mlo_li_ct, mlo_lg_ct=mlo_lg_ct, 
-                                                    mlo_li_fr=mlo_li_fr, mlo_lg_fr=mlo_lg_fr, 
                                                     variant=glyph_dict['Variant']), 
         code="""        
-        function setAxis(label, mlo){
-            for (let i = 0; i < axes['count'].length; i++){
-                axes['count'][i].axis_label = label
-                axes['count'][i].major_label_overrides = mlo[i]
-            }   
+        function setAxisVis(axis_name, vis){
+            for (let i = 0; i < axes[axis_name].length; i++){
+                axes[axis_name][i].visible = vis
+            }
         }
         
         for (let i = 0; i < variant.length; i++){
@@ -37,22 +29,34 @@ def add_linear_log_scale(axes, glyph_dict):
                 if (radio_group_scale.active == 0){
                     variant[i].data_source.data['y1_circle']=variant[i].data_source.data['y1_ci_li_ct']
                     variant[i].data_source.data['y1_segment']=variant[i].data_source.data['y1_sg_li_ct']
-                    setAxis('Allele count', mlo_li_ct)
+                    setAxisVis('count_linear', true)
+                    setAxisVis('count_log', false)
+                    setAxisVis('frequency_linear', false)
+                    setAxisVis('frequency_log', false)
                 } else {
                     variant[i].data_source.data['y1_circle']=variant[i].data_source.data['y1_ci_lg_ct']
                     variant[i].data_source.data['y1_segment']=variant[i].data_source.data['y1_sg_lg_ct']
-                    setAxis('Log(Allele count)', mlo_lg_ct)
+                    setAxisVis('count_linear', false)
+                    setAxisVis('count_log', true)
+                    setAxisVis('frequency_linear', false)
+                    setAxisVis('frequency_log', false)
                 }
             }
             if (cb_obj.active == 1) {
                 if (radio_group_scale.active == 0){
                     variant[i].data_source.data['y1_circle']=variant[i].data_source.data['y1_ci_li_fr']
                     variant[i].data_source.data['y1_segment']=variant[i].data_source.data['y1_sg_li_fr']
-                    setAxis('Allele frequency', mlo_li_fr)
+                    setAxisVis('count_linear', false)
+                    setAxisVis('count_log', false)
+                    setAxisVis('frequency_linear', true)
+                    setAxisVis('frequency_log', false)
                 } else {
                     variant[i].data_source.data['y1_circle']=variant[i].data_source.data['y1_ci_lg_fr']
                     variant[i].data_source.data['y1_segment']=variant[i].data_source.data['y1_sg_lg_fr']
-                    setAxis('-Log(Allele frequency)', mlo_lg_fr)
+                    setAxisVis('count_linear', false)
+                    setAxisVis('count_log', false)
+                    setAxisVis('frequency_linear', false)
+                    setAxisVis('frequency_log', true)
                 }
             }
             variant[i].data_source.change.emit()        
@@ -60,14 +64,11 @@ def add_linear_log_scale(axes, glyph_dict):
     """))    
         
     radio_group_scale.js_on_click(CustomJS(args=dict(radio_group_type=radio_group_type,axes=axes, 
-                                                     mlo_li_ct=mlo_li_ct, mlo_lg_ct=mlo_lg_ct, 
-                                                     mlo_li_fr=mlo_li_fr, mlo_lg_fr=mlo_lg_fr, 
                                                      variant=glyph_dict['Variant']), code="""        
-        function setAxis(label, mlo){
-            for (let i = 0; i < axes['count'].length; i++){
-                axes['count'][i].axis_label = label
-                axes['count'][i].major_label_overrides = mlo[i]
-            }   
+        function setAxisVis(axis_name, vis){
+            for (let i = 0; i < axes[axis_name].length; i++){
+                axes[axis_name][i].visible = vis
+            }
         }
         
         for (let i = 0; i < variant.length; i++){
@@ -75,32 +76,42 @@ def add_linear_log_scale(axes, glyph_dict):
                 if (radio_group_type.active == 0){
                     variant[i].data_source.data['y1_circle']=variant[i].data_source.data['y1_ci_li_ct']
                     variant[i].data_source.data['y1_segment']=variant[i].data_source.data['y1_sg_li_ct']
-                    setAxis('Allele count', mlo_li_ct)
+                    setAxisVis('count_linear', true)
+                    setAxisVis('count_log', false)
+                    setAxisVis('frequency_linear', false)
+                    setAxisVis('frequency_log', false)
                     
                 } else {
                     variant[i].data_source.data['y1_circle']=variant[i].data_source.data['y1_ci_li_fr']
                     variant[i].data_source.data['y1_segment']=variant[i].data_source.data['y1_sg_li_fr']
-                    setAxis('Allele frequency', mlo_li_fr)
+                    setAxisVis('count_linear', false)
+                    setAxisVis('count_log', false)
+                    setAxisVis('frequency_linear', true)
+                    setAxisVis('frequency_log', false)
                 }
             }
             if (cb_obj.active == 1) {
                 if (radio_group_type.active == 0){
                     variant[i].data_source.data['y1_circle']=variant[i].data_source.data['y1_ci_lg_ct']
                     variant[i].data_source.data['y1_segment']=variant[i].data_source.data['y1_sg_lg_ct']
-                    setAxis('Log(Allele count)', mlo_lg_ct)
+                    setAxisVis('count_linear', false)
+                    setAxisVis('count_log', true)
+                    setAxisVis('frequency_linear', false)
+                    setAxisVis('frequency_log', false)
                     
                 } else {
                     variant[i].data_source.data['y1_circle']=variant[i].data_source.data['y1_ci_lg_fr']
                     variant[i].data_source.data['y1_segment']=variant[i].data_source.data['y1_sg_lg_fr']
-                    setAxis('-Log(Allele frequency)', mlo_lg_fr)
+                    setAxisVis('count_linear', false)
+                    setAxisVis('count_log', false)
+                    setAxisVis('frequency_linear', false)
+                    setAxisVis('frequency_log', true)
                     
                 }
             }
             variant[i].data_source.change.emit()        
         }
-    """))    
-
-    radio_group_scale.active = 0
+    """))     
     
     return div_type,radio_group_type,div_scale,radio_group_scale
 
@@ -297,11 +308,8 @@ def add_smoothing_slider(glyph_ls, fill_area_ls, title=''):
     """))
     return slider
 
-
-#def add_legend(user_line_params, height=70, width=270):
 def add_legend(user_line_params, width=270):
     num_lines = sum([len(user_line_params[axis_name]['lines']) for axis_name in user_line_params])
-    #legend_plot = figure(plot_height=height,plot_width=width,toolbar_location=None)
     height = 20 *num_lines + 10
     legend_plot = figure(plot_height=height,plot_width=width,toolbar_location=None)
     legend_plot.yaxis.visible = legend_plot.xaxis.visible = legend_plot.grid.visible = False

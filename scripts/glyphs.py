@@ -168,8 +168,8 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
 
     def get_y1(fn, ls):
         ls_fn = [fn(x) for x in ls]
-        for idx, x in enumerate(ls_fn):
-            if x < 0: raise ValueError('Lollipop height cannot be negative')
+        for x in ls_fn: 
+            if x < 0: raise RuntimeError('Lollipop height cannot be negative')
         y1_circle = [c * (plot_params['plot_height'] - plot_params['y0'] - variant_params[
             'min_lollipop_height'] - variant_params['lollipop_radius'] - line_width - 2) / max([c for c in ls_fn]) + plot_params['y0'] +
                      variant_params['min_lollipop_height'] for c in ls_fn]
@@ -182,11 +182,20 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
 
     hover_colors = [lighten_hex_color(c, 40) for c in colors]
 
-    if variant_params['add_variant_axis']:
-        y1_circle,y1_segment = get_y1(lambda x: x, allele_counts)
+    if variant_params['add_variant_axis']: 
+        #set original lollipop ys based on default_y_axis (allele count or allele freq) and default_y_axis_scale (log or linear)
+        if variant_params ['default_y_axis'] == 'AC': ys = allele_counts
+        elif variant_params['default_y_axis'] == 'AF': ys = allele_frequencies
+
+        if variant_params['default_y_axis_scale'] == 'linear': fn = lambda x: x
+        elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AC': fn = lambda x: np.log10(x) if x > 0 else 0
+        elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AF': fn = lambda x: -np.log10(x) if x > 0 else 0
+        
+        y1_circle,y1_segment = get_y1(fn, ys)
     else:
+        #if lollipop heights don't hold meaning, set them to 1/2 max height
         y1_circle,y1_segment = get_y1(lambda x: x/2, [1 for v in variant_ls])
-        y1_circle = [y1/2 for y1 in y1_circle] #if lollipop heights don't hold meaning, set them to 1/2 max height
+        y1_circle = [y1/2 for y1 in y1_circle] 
         y1_segment = [y1/2 for y1 in y1_segment]
 
     cds_dict = dict(x=x, r=r, y0=y0s, y1_circle=y1_circle, y1_segment=y1_segment, 

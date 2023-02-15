@@ -8,12 +8,11 @@ Variants are specified as .vcf, .csv, or .bed and are annotated in hover boxes w
 
 Tracks are specified as .gtf and are annotated with name, coordinates, and length. Colors can be specified by the user or chosen randomly from a color palette.
 
-Coordinate-based information can be provided as .csv (point-based) or .bedgraph (interval-based). The user can optionally add a smoothing slider and customize the y axis with tick precision and scientific notation. The user can specify the line color, alpha value, and choose whether to fill in the area under the curve.
+Coordinate-based information can be provided as .csv/.tsv (point-based) or .bedgraph (interval-based). The user can customize the y axis with tick precision and scientific notation. The user can specify the line color, alpha value, and choose whether to fill in the area under the curve.
 
-UTRs, direction arrows, and lollipops, tracks, and coordinate-based information can be turned on and off in the plot with checkboxes.
+Plots can be output as HTML, PNG, or SVG.
 
-Click on any exon to expand it. Click on any white space to revert the plot.
-
+For HTML plots: UTRs, direction arrows, and lollipops, tracks, and coordinate-based information can be turned on and off in the plot with checkboxes. A smoothing slider can be added to coordinate-based information. Click on any exon to expand it. Click on any white space to revert the plot.
 
 ## Demo Plot
 https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
@@ -94,3 +93,8 @@ default: `plot.html`
 ```
 python scripts/transcriptionary.py test/test.yaml all --output test/plot.html
 ```
+
+## Color palette citations
+Color-blind friendly color palettes are included in default_colors/palettes.yaml
+bang_wong_palette: https://www.nature.com/articles/nmeth.1618
+paul_tol_palette: https://personal.sron.nl/~pault/
