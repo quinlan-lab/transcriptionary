@@ -155,6 +155,9 @@ def parse_args():
     track_colors = [c if '#' in c else named_colors[c] for c in palettes[plot_params['track_palette']]]
     plot_params['track_colors'] = track_colors
 
+    ### LINES ###
+    if not user_line_params: user_line_params = []
+
     ### TRANSCRIPTS ###
     transcript_IDs = args.transcripts
     if transcript_IDs not in ['all', 'transcript_names']:
@@ -203,7 +206,7 @@ def transcriptionary():
         plot,glyph_dict = plot_transcript(plot_params, variant_params, user_line_params, transcripts[ID], glyph_dict, axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
         plot_ls.append(plot)
 
-    legend = add_legend(user_line_params)
+    legend = [add_legend(user_line_params)] if user_line_params else []
 
     if output_format == 'html': #only add widgets for HTML  
 
@@ -235,7 +238,7 @@ def transcriptionary():
         
         lines = list(zip(user_line_checkboxes,sliders))
         for tup in lines: grid1.append(tup)
-        grid1.append([legend])
+        grid1.extend(legend)
         grid = gridplot(grid1, toolbar_location=None)
         output_file(output)
         save(column([grid]+plot_ls))
@@ -243,13 +246,11 @@ def transcriptionary():
     elif output_format == 'png':
         from bokeh.io import export_png
         for p in plot_ls: p.toolbar_location = None
-        export_png(column([legend] + plot_ls), filename=output)
+        export_png(column(legend + plot_ls), filename=output)
 
     elif output_format == 'svg':
         from bokeh.io import export_svg
         for p in plot_ls: p.output_backend = 'svg'
-        export_svg(column([legend] + plot_ls), filename=output)
-
-
+        export_svg(column(legend + plot_ls), filename=output)
 
 transcriptionary()
