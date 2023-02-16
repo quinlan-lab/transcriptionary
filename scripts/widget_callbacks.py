@@ -115,7 +115,7 @@ def add_linear_log_scale(variant_params, axes, glyph_dict):
     
     return div_type,radio_group_type,div_scale,radio_group_scale
 
-def add_checkbox(plot_ls, axes, glyph_dict, plot_params, variant_params):
+def add_checkbox(plot_ls, line_axes, glyph_dict, plot_params, variant_params):
     labels = []
     for tup in zip(['UTRs','Direction','Variant'], [plot_params['plot_UTRs'], plot_params['plot_direction'], variant_params['plot_variants']]):
         if tup[1]: labels.append(tup[0])
@@ -124,7 +124,7 @@ def add_checkbox(plot_ls, axes, glyph_dict, plot_params, variant_params):
     
     glyph_dict_checkbox = {label:glyph_dict[label] for label in labels}
 
-    callback = CustomJS(args=dict(plot_ls=plot_ls, axes=axes, labels=labels, glyph_dict_checkbox=glyph_dict_checkbox,
+    callback = CustomJS(args=dict(plot_ls=plot_ls, line_axes=line_axes, labels=labels, glyph_dict_checkbox=glyph_dict_checkbox,
                                  ), code='''
         function setVis(glyphs, vis){
             for (let i = 0; i < glyphs.length; i++){
@@ -136,12 +136,15 @@ def add_checkbox(plot_ls, axes, glyph_dict, plot_params, variant_params):
         
         function setAxisVis(axis_name, vis){
             for (let i = 0; i < axes[axis_name].length; i++){
-                axes[axis_name][i].visible = vis
+                line_axes[axis_name][i].visible = vis
             }
         }
         
         for (let i = 0; i < labels.length; i++){
-            if (cb_obj.active.includes(i)) {setVis(glyph_dict_checkbox[labels[i]], true)}
+            if (cb_obj.active.includes(i)) {
+                setVis(glyph_dict_checkbox[labels[i]], true)
+                
+            }
             else {setVis(glyph_dict_checkbox[labels[i]], false)}
         }
     ''')

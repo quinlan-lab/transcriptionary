@@ -13,7 +13,7 @@ from bokeh.models import ColumnDataSource, Range1d, HoverTool, LabelSet
 import yaml
 from yaml.loader import SafeLoader
 
-def plot_transcript(plot_params, variant_params, user_line_params, transcript_dict, glyph_dict, axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
+def plot_transcript(plot_params, variant_params, user_line_params, transcript_dict, glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
 
     project_coords.adjust_coordinates(transcript_dict['exons'], intron_size=plot_params['intron_size'])
     plot_height = plot_params['plot_height']    
@@ -45,10 +45,10 @@ def plot_transcript(plot_params, variant_params, user_line_params, transcript_di
 
             def log10(f): return np.log10(f) if f > 0 else 0
 
-            axes['count_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele count', allele_counts, visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'linear')))
-            axes['count_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele count)', [log10(c) for c in allele_counts], visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'log')))
-            axes['frequency_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele frequency', allele_frequencies, visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'linear')))
-            axes['frequency_log'].append(add_variant_axis(plot_params, variant_params, plot, '-Log(Allele frequency)', [-log10(f) for f in allele_frequencies], visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'log')))
+            variant_axes['count_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele count', allele_counts, visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'linear')))
+            variant_axes['count_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele count)', [log10(c) for c in allele_counts], visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'log')))
+            variant_axes['frequency_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele frequency', allele_frequencies, visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'linear')))
+            variant_axes['frequency_log'].append(add_variant_axis(plot_params, variant_params, plot, '-Log(Allele frequency)', [-log10(f) for f in allele_frequencies], visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'log')))
 
     else: variant_params['add_variant_axis'] = False
 
@@ -108,7 +108,7 @@ def plot_transcript(plot_params, variant_params, user_line_params, transcript_di
             line_glyph.level = 'underlay'
             user_line_glyphs[axis_name].append(line_glyph)
             
-        add_user_axis(plot, plot_params, user_line_params, axis_name, y_max, plot_params['y0'], plot_params['plot_height'], y_min=0, num_ticks=3, axis_position='right', visible=True)
+        line_axes[axis_name].append(add_user_axis(plot, plot_params, user_line_params, axis_name, y_max, plot_params['y0'], plot_params['plot_height'], y_min=0, num_ticks=3, axis_position='right', visible=True))
 
     return plot,glyph_dict
 
@@ -196,14 +196,15 @@ def transcriptionary():
     glyph_dict = dict(exon=[],UTRs=[],Variant=[],Direction=[])
     user_track_glyphs = {track_name:[] for track_name in user_track_params}
     user_line_glyphs = {line_name:[] for line_name in user_line_params}
-    axes = dict(count_linear=[],count_log=[],frequency_linear=[],frequency_log=[])
+    variant_axes = dict(count_linear=[],count_log=[],frequency_linear=[],frequency_log=[])
+    line_axes = {}
     for line_name in user_line_params:
-        axes[line_name] = []
+        line_axes[line_name] = []
     
     for idx,ID in enumerate(transcript_IDs):
         title = 'gene={}; transcript={}/{}'.format(plot_params['gene_name'], ID, transcripts[ID]['ID'])
         if transcripts[ID]['direction']: title += ' ({})'.format(transcripts[ID]['direction'])
-        plot,glyph_dict = plot_transcript(plot_params, variant_params, user_line_params, transcripts[ID], glyph_dict, axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
+        plot,glyph_dict = plot_transcript(plot_params, variant_params, user_line_params, transcripts[ID], glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
         plot_ls.append(plot)
 
     legend = [add_legend(user_line_params)] if user_line_params else []
@@ -213,16 +214,16 @@ def transcriptionary():
         from bokeh.plotting import output_file, save
 
         add_exon_zoom(plot_ls,glyph_dict)
-        checkbox = add_checkbox(plot_ls,axes,glyph_dict,plot_params, variant_params)
-        user_tracks_checkbox = add_user_tracks_checkbox(plot_ls,axes,user_track_glyphs,glyph_dict['Direction'],plot_params)
+        checkbox = add_checkbox(plot_ls,line_axes,glyph_dict,plot_params, variant_params)
+        user_tracks_checkbox = add_user_tracks_checkbox(plot_ls,{**variant_axes,**line_axes},user_track_glyphs,glyph_dict['Direction'],plot_params)
         
         user_line_checkboxes=[] #one checkbox per user line, so that they can be lined up with sliders
         for axis in user_line_params:
-            user_line_checkbox = add_user_lines_checkbox(plot_ls, axes[axis], user_line_glyphs[axis], axis)
+            user_line_checkbox = add_user_lines_checkbox(plot_ls, line_axes[axis], user_line_glyphs[axis], axis)
             user_line_checkboxes.append(user_line_checkbox)
         
         if variant_params['plot_variants']:
-            div_type,radio_group_type,div_scale,radio_group_scale = add_linear_log_scale(variant_params, axes, glyph_dict)
+            div_type,radio_group_type,div_scale,radio_group_scale = add_linear_log_scale(variant_params, variant_axes, glyph_dict)
         
         sliders = []
         for axis_name in user_line_params:
@@ -238,7 +239,7 @@ def transcriptionary():
         
         lines = list(zip(user_line_checkboxes,sliders))
         for tup in lines: grid1.append(tup)
-        grid1.extend(legend)
+        grid1.append(legend)
         grid = gridplot(grid1, toolbar_location=None)
         output_file(output)
         save(column([grid]+plot_ls))
