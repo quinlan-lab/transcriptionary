@@ -115,8 +115,6 @@ def plot_transcript(plot_params, variant_params, user_line_params, transcript_di
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('config_file', help='must be .yaml; sample config file can be found at test/test.yaml')
-    parser.add_argument('transcripts', help='transcripts to plot; can be [... str], "all", or "transcript_names" to print list of transcripts')
-    parser.add_argument('-o', '--output', required=False, help='output filepath')
     args = parser.parse_args()
 
     ### CONFIG ###
@@ -159,7 +157,7 @@ def parse_args():
     if not user_line_params: user_line_params = []
 
     ### TRANSCRIPTS ###
-    transcript_IDs = args.transcripts
+    transcript_IDs = plot_params['transcripts']
     if transcript_IDs not in ['all', 'transcript_names']:
         transcript_IDs = transcript_IDs.strip('[').strip(']').split(',')
         transcript_IDs = [t.strip('\'') for t in transcript_IDs]
@@ -167,7 +165,7 @@ def parse_args():
     ### OUTPUT ###
     output_format = plot_params['output_format'].lower().strip('.')
     if output_format not in ['html', 'png', 'svg']: raise RuntimeError('Argument output_format in {} must be HTML, PNG, or SVG'.format(config_file))
-    output = args.output + '.' + output_format if args.output[-len(output_format):] != output_format else args.output
+    output = plot_params['output_filepath'] + '.' + output_format if plot_params['output_filepath'][-len(output_format):] != output_format else plot_params['output_filepath']
 
     return plot_params,variant_params,user_track_params,user_line_params,transcript_IDs,output,output_format
 

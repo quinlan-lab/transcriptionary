@@ -96,5 +96,6 @@ python scripts/transcriptionary.py test/test.yaml all --output test/plot.html
 
 ## Color palette citations
 Color-blind friendly color palettes are included in default_colors/palettes.yaml
-bang_wong_palette: https://www.nature.com/articles/nmeth.1618
-paul_tol_palette: https://personal.sron.nl/~pault/
+
+- bang_wong_palette: https://www.nature.com/articles/nmeth.1618
+- paul_tol_palette: https://personal.sron.nl/~pault/

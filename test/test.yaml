@@ -1,5 +1,7 @@
 ---
-output_format: 'svg' #can be HTML, PNG, or SVG
+output_format: 'html' #can be HTML, PNG, or SVG
+output_filepath: 'test/plot.html'
+transcripts: 'all'
 ###Data params
 gff_path: 'test/data/test.gff3'  #if not database file, database will be created for you
 # variant_path: 'test/gnomAD_v3.1.1_ENSG00000075043_2021_09_16_16_02_28.csv'
