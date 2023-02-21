@@ -135,9 +135,23 @@ def parse_args():
         named_colors = list(yaml.load_all(f, Loader=SafeLoader))[0]
 
     ### GLYPH COLORS ###
-    for glyph_type in plot_params['glyph_colors']:
-        color = plot_params['glyph_colors'][glyph_type]
-        if color[0] != "#": plot_params['glyph_colors'][glyph_type] = named_colors[color]
+    # replace named colors with hex code from named_colors.yaml
+    def get_color(color): return color if color[0] == "#" else named_colors[color]
+
+    for glyph_type in plot_params['glyph_colors']: plot_params['glyph_colors'][glyph_type] = get_color(plot_params['glyph_colors'][glyph_type])
+
+    for sev in variant_params['variant_severity_colors']: variant_params['variant_severity_colors'][sev] = get_color(variant_params['variant_severity_colors'][sev])
+
+    for track in user_track_params:
+        try:
+            for domain in user_track_params[track]['colors']:
+                user_track_params[track]['colors'][domain] = get_color(user_track_params[track]['colors'][domain])
+        except: continue
+
+    for axis in user_line_params:
+        for line in user_line_params[axis]['lines']:
+            user_line_params[axis]['lines'][line]['color'] = get_color(user_line_params[axis]['lines'][line]['color'])
+    
 
     ### VARIANTS ###
     try: #if info_annotations empty or nonexistent, set to empty list

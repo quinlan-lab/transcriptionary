@@ -21,18 +21,19 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 
 `config_file` (required): user-defined parameters (sample config file at test/test.yaml)
 
-`transcripts` (required): list transcript names or specify transcripts to plot
+## Config Parameters
+
+`output_format`: can be HTML (interactive); PNG or SVG (non-interactive)
+
+`output_filepath`: path to desired output file
+
+`transcripts`: list transcript names or specify transcripts to plot. can be:
 - `transcript-names`: list all possible transcript names for the given configuration file (does not create a plot).
 - `flattened-exons`: overlay all transcripts to create a transcript with the largest possible exons (used to view all possible exonic variants).
 - `all`: plot all transcripts, including `flattened-exons`.
 - '[`<transcript_name_1>`, `<transcript_name_2>`, ...]': specify transcripts
 
-`output` (optional): desired output filepath
-default: `plot.html`
-
-## Config Parameters
-
-`gff_path`: path to gff (for feature coordinates)
+`gff_path`: path to gff (for feature coordinates). When running the first time, a `gff.db` file will be created for you. When rerunning, can change this parameter to the .gff.db file to avoid recreating it.
 
 `variant_path`: path to vcf, csv, or bed (for variant coordinates)
 
@@ -55,6 +56,8 @@ default: `plot.html`
 - `arrow`: default '#252525'
 - `UTR`: default '#969696'
 - `variant`: default lollipop color if no severity information is available; default 'charcoal'
+
+`track_palette`: palette to draw random track colors from; can be any palette in palettes.yaml
 
 `plot_variants`: show lollipops (boolean)
 `seqid`: chromosome
@@ -93,6 +96,9 @@ default: `plot.html`
 ```
 python scripts/transcriptionary.py test/test.yaml all --output test/plot.html
 ```
+
+## How to customize colors and color palettes
+Define or adjust named colors by modifying `default_colors/named_colors.yaml`. Create a custom color palette to pull random track colors from by adding to `default_colors/palettes.yaml` (use hex codes or use the named colors defined in `default_colors/named_colors.yaml`).
 
 ## Color palette citations
 Color-blind friendly color palettes are included in default_colors/palettes.yaml
