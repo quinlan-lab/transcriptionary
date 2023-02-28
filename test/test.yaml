@@ -36,7 +36,7 @@ seqid: chr20
 info_annotations: #INFO fields to add to hover annotations (VCF only)
     - pab_max
     - popmax
-vep: #VCF only
+vep: #VCF only; leave empty if not VEP annotated
     field_name: vep #name of INFO field with VEP string (e.g. vep, ann, csq)
     vep_fields: #vep fields to add to hover annotations
     - SYMBOL
@@ -51,10 +51,8 @@ lollipop_radius: 5
 lollipop_line_width: 2
 variant_severity_colors:
     LOW: 'apple green'
-    MODERATE: '#f6aa1c'
     MED: '#f6aa1c'
     HIGH: '#e01e37'
-    MODIFIER: '#778da9'
     NONE: '#171717'
 ...
 

@@ -36,7 +36,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
                                    ('Allele count', '@allele_counts'), ('Allele number', '@allele_numbers'), ('Allele frequency', '@allele_frequencies'), 
                                    ('Change', '@ref > @alt'), ('Severity', '@sev')]
             tooltips_variants.extend([(info_field, '@'+info_field) for info_field in variant_params['info_annotations']]) #add user defined INFO fields to hover box annotation
-            tooltips_variants.extend([(vep_field, '@'+vep_field) for vep_field in variant_params['vep']['vep_fields']]) #add user defined VEP field to hover box annotation
+            if variant_params['vep']: tooltips_variants.extend([(vep_field, '@'+vep_field) for vep_field in variant_params['vep']['vep_fields']]) #add user defined VEP field to hover box annotation
 
             plot.add_tools(HoverTool(tooltips=tooltips_variants, renderers=[circle_glyph,ray_glyph], point_policy='follow_mouse', attachment='below'))
         glyph_dict['Variant'].extend([ray_glyph,circle_glyph])
@@ -160,11 +160,14 @@ def parse_args():
         for line in user_line_params[axis]['lines']:
             user_line_params[axis]['lines'][line]['color'] = get_color(user_line_params[axis]['lines'][line]['color'])
     
-
     ### VARIANTS ###
     try: #if info_annotations empty or nonexistent, set to empty list
         if not variant_params['info_annotations']: variant_params['info_annotations'] = []
     except: variant_params['info_annotations'] = []
+
+    try: #if vep empty or nonexistent, set to empty list
+        if not variant_params['vep']: variant_params['vep'] = []
+    except: variant_params['vep'] = []
 
     ### TRACKS ###
     for track_name in user_track_params:

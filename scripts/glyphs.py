@@ -209,7 +209,8 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
                                    colors=colors, hover_colors=hover_colors, line_alpha=[1 for v in variant_ls])
 
     for info_field in variant_params['info_annotations']: cds_dict[info_field] = [v[info_field] for v in variant_ls]
-    for vep_field in variant_params['vep']['vep_fields']: cds_dict[vep_field] = [v[transcript_ID + '_' + vep_field] for v in variant_ls]
+    if variant_params['vep']: 
+        for vep_field in variant_params['vep']['vep_fields']: cds_dict[vep_field] = [v[transcript_ID + '_' + vep_field] for v in variant_ls]
 
     if variant_params['add_variant_axis']:
         y1_ci_li_ct, y1_sg_li_ct = get_y1(lambda x: x, allele_counts)

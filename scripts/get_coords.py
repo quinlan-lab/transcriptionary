@@ -27,14 +27,11 @@ def get_variants(variant_params, transcripts, start, end):
         from geneimpacts import VEP, Effect
 
         vcf = VCF(vcf_path)
-        vep_keys = vcf.get_header_type(variant_params['vep']['field_name'])['Description'].strip('"').split('Format: ')[-1].split('|')
+        if variant_params['vep']: vep_keys = vcf.get_header_type(variant_params['vep']['field_name'])['Description'].strip('"').split('Format: ')[-1].split('|')
 
         variant_ls = []
 
         for v in vcf('{}:{}-{}'.format(seqid,start,end)):
-
-            vep = v.INFO[variant_params['vep']['field_name']]
-            impact_strings = vep.split(",")
 
             di_variant = dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,            
                     allele_count=v.INFO.get('AC'),
@@ -43,40 +40,35 @@ def get_variants(variant_params, transcripts, start, end):
 
             for info_field in variant_params['info_annotations']: di_variant[info_field] = v.INFO.get(info_field)
 
-            for vep_field in variant_params['vep']['vep_fields']:
+            if variant_params['vep']:
+
+                vep = v.INFO[variant_params['vep']['field_name']]
+                impact_strings = vep.split(",")
+
+                for vep_field in variant_params['vep']['vep_fields']:
+                    for transcript_ID in transcript_IDs:
+                        transcript_impact_string = [s for s in impact_strings if transcript_ID in s]
+                        if len(transcript_impact_string) > 1: print('Warning: more than one VEP impact string with transcript ID {}; using first impact string'.format(transcript_ID))
+                        if len(transcript_impact_string) == 0: 
+                            di_variant[transcript_ID + '_' + vep_field] = 'None'
+                        else: 
+                            transcript_impact_string = transcript_impact_string[0]
+                            di_variant[transcript_ID + '_' + vep_field] = VEP(transcript_impact_string, keys=vep_keys).effects.get(vep_field, 'None')
+
                 for transcript_ID in transcript_IDs:
                     transcript_impact_string = [s for s in impact_strings if transcript_ID in s]
                     if len(transcript_impact_string) > 1: print('Warning: more than one VEP impact string with transcript ID {}; using first impact string'.format(transcript_ID))
                     if len(transcript_impact_string) == 0: 
-                        di_variant[transcript_ID + '_' + vep_field] = 'None'
+                        di_variant[transcript_ID + '_severity'] = 'NONE'
                     else: 
                         transcript_impact_string = transcript_impact_string[0]
-                        di_variant[transcript_ID + '_' + vep_field] = VEP(transcript_impact_string, keys=vep_keys).effects.get(vep_field, 'None')
+                        di_variant[transcript_ID + '_severity'] = VEP(transcript_impact_string, keys=vep_keys).impact_severity
 
-            for transcript_ID in transcript_IDs:
-                transcript_impact_string = [s for s in impact_strings if transcript_ID in s]
-                if len(transcript_impact_string) > 1: print(transcript_impact_string)
-                if len(transcript_impact_string) == 0: 
-                    di_variant[transcript_ID + '_severity'] = 'NONE'
-                else: 
-                    transcript_impact_string = transcript_impact_string[0]
-                    di_variant[transcript_ID + '_severity'] = VEP(transcript_impact_string, keys=vep_keys).impact_severity
+            else:
+                for transcript_ID in transcript_IDs: di_variant[transcript_ID + '_severity'] = 'NONE'
 
             variant_ls.append(di_variant)
 
-        return variant_ls
-
-    def get_variants_csv(csv_path):
-        variant_ls = []
-        with open(csv_path, newline='') as csvfile:
-            reader = csv.reader(csvfile)
-            next(reader) #skip header
-            for row in reader:
-                variant_dict = dict(pos=int(row[1]), compact_pos=-1, ref=row[3], alt=row[4], 
-                               annotation=row[12], severity=variant_type(row[12]), 
-                               allele_count=int(row[16]), allele_number=int(row[17]), allele_frequency=float(row[18]))
-                variant_ls.append(variant_dict)
-        variant_ls = list({v['pos']:v for v in variant_ls}.values()) #remove duplicate dicts
         return variant_ls
 
     def get_variants_bed(bed_path):

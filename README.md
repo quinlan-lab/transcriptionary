@@ -4,7 +4,8 @@ transcriptionary takes user-defined parameters to create a static .html document
 
 Exons are annotated with coordinates and length.
 
-Variants are specified as .vcf, .csv, or .bed and are annotated in hover boxes with coordinate, allele count, allele frequency, mutation type, and VEP annotation. They are colored by severity. Radio buttons in the plot give the option to view lollipop heights as allele count or allele frequency, and linear or log scale.
+Variants are specified as .vcf, .csv, or .bed and are annotated in hover boxes with coordinate, allele count, allele frequency, mutation type, and VEP annotation. They are colored by severity. Radio buttons in the plot give the option to view lollipop heights as allele count or allele frequency, and linear or log scale. 
+If a VCF with VEP annotations is provided, lollipops will be categorized as LOW, MED, or HIGH impact as per [geneimpacts](https://github.com/brentp/geneimpacts) and colored accordingly.
 
 Tracks are specified as .gtf and are annotated with name, coordinates, and length. Colors can be specified by the user or chosen randomly from a color palette.
 
@@ -57,14 +58,14 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 - `UTR`: default '#969696'
 - `variant`: default lollipop color if no severity information is available; default 'charcoal'
 
-`track_palette`: palette to draw random track colors from; can be any palette in palettes.yaml
+`track_palette`: palette to draw random track colors from; can be any palette in default_colors/palettes.yaml
 
 `plot_variants`: show lollipops (boolean)
 `seqid`: chromosome
 `min_lollipop_height`: minimum height of lollipop in pixels; default 15
 `lollipop_radius`: radius of lollipop in pixels; default 5
 `lollipop_line_width`: line width of lollipop in pixels; default 2
-`variant_severity_colors`: specify lollipop colors by variant severity
+`variant_severity_colors`: specify lollipop colors by variant severity; use hex codes or predefined colors from default_colors/named_colors.yaml
 - LOW: default '#80b918'
 - MODERATE: default '#f6aa1c'
 - HIGH: default '#e01e37'
