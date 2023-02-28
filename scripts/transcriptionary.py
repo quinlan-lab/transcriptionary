@@ -13,7 +13,7 @@ from bokeh.models import ColumnDataSource, Range1d, HoverTool, LabelSet
 import yaml
 from yaml.loader import SafeLoader
 
-def plot_transcript(plot_params, variant_params, user_line_params, transcript_dict, glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
+def plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcript_dict, glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
 
     project_coords.adjust_coordinates(transcript_dict['exons'], intron_size=plot_params['intron_size'])
     plot_height = plot_params['plot_height']    
@@ -78,16 +78,16 @@ def plot_transcript(plot_params, variant_params, user_line_params, transcript_di
 
     for idx,track_name in enumerate(user_tracks):
         project_coords.map_box(user_tracks[track_name], transcript_dict['exons'])
-        tooltips_tracks = [('Name','@track_names'), ('Start (adjusted)', '@adj_start'), ('End (adjusted)', '@adj_end'), 
-                          ('Start (true)', '@true_start'), ('End (true)', '@true_end'), ('Length', '@true_len'), ('Strand', '@strand')]
-        
+        tooltips_tracks = [(user_track_params[track_name]['color_by'],'@color_by'), ('Start (adjusted)', '@adj_start'), ('End (adjusted)', '@adj_end'), 
+                    ('Start (true)', '@true_start'), ('End (true)', '@true_end'), ('Length', '@true_len')]
+        tooltips_tracks.extend([(field, '@'+field) for field in user_track_params[track_name]['annotate_with']])
+
         y = ((h*1.5)*(len(user_tracks) - idx - 1)+(h))
-        track_glyph = add_track_glyph(plot, user_tracks[track_name], h*0.9, y)
+        track_glyph = add_track_glyph(user_track_params, track_name, plot, user_tracks[track_name], h*0.9, y)
         plot.add_tools(HoverTool(tooltips=tooltips_tracks, renderers=[track_glyph], point_policy='follow_mouse', attachment='below'))
         user_track_glyphs[track_name].append(track_glyph)
         cs = ColumnDataSource(dict(x=[0], y=[(h*1.5)*(len(user_tracks) - idx - 1)], text=[list(user_tracks.keys())[idx]]))
-        label = LabelSet(source=cs, x='x', y='y', text='text',text_font_size='{}px'.format(plot_params['track_height']),
-                    text_align='left')
+        label = LabelSet(source=cs, x='x', y='y', text='text',text_font_size='{}px'.format(plot_params['track_height']), text_align='left')
         plot.add_layout(label)
         user_track_glyphs[track_name].append(label)
         
@@ -127,6 +127,9 @@ def parse_args():
         variant_params = params[1]
         user_track_params = params[2]
         user_line_params = params[3]
+        if not user_track_params: user_track_params = []
+        if not user_line_params: user_line_params = []
+
         plot_params['transcript_height'] = 20 + len(user_track_params) * plot_params['track_height'] * 1.5
         plot_params['y0'] = plot_params['transcript_height'] + plot_params['exon_height'] / 2  # "0" for line plots
 
@@ -148,6 +151,11 @@ def parse_args():
                 user_track_params[track]['colors'][domain] = get_color(user_track_params[track]['colors'][domain])
         except: continue
 
+    with open('default_colors/palettes.yaml') as f:
+        palettes = list(yaml.load_all(f, Loader=SafeLoader))[0]
+    track_colors = [c if '#' in c else named_colors[c] for c in palettes[plot_params['track_palette']]]
+    plot_params['track_colors'] = track_colors
+
     for axis in user_line_params:
         for line in user_line_params[axis]['lines']:
             user_line_params[axis]['lines'][line]['color'] = get_color(user_line_params[axis]['lines'][line]['color'])
@@ -160,12 +168,9 @@ def parse_args():
 
     ### TRACKS ###
     for track_name in user_track_params:
-        track_db = gff_to_db(user_track_params[track_name]['gtf_path'], user_track_params[track_name]['gtf_path'] + '.db')
-        user_track_params[track_name]['db'] = track_db
-    with open('default_colors/palettes.yaml') as f:
-        palettes = list(yaml.load_all(f, Loader=SafeLoader))[0]
-    track_colors = [c if '#' in c else named_colors[c] for c in palettes[plot_params['track_palette']]]
-    plot_params['track_colors'] = track_colors
+        try: #if annotate_with empty or nonexistent, set to empty list
+            if not user_track_params[track_name]['annotate_with']: user_track_params[track_name]['annotate_with'] = []
+        except: user_track_params[track_name]['annotate_with'] = []
 
     ### LINES ###
     if not user_line_params: user_line_params = []
@@ -216,7 +221,7 @@ def transcriptionary():
     for idx,ID in enumerate(transcript_IDs):
         title = 'gene={}; transcript={}/{}'.format(plot_params['gene_name'], ID, transcripts[ID]['ID'])
         if transcripts[ID]['direction']: title += ' ({})'.format(transcripts[ID]['direction'])
-        plot,glyph_dict = plot_transcript(plot_params, variant_params, user_line_params, transcripts[ID], glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
+        plot,glyph_dict = plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcripts[ID], glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
         plot_ls.append(plot)
 
     legend = [add_legend(user_line_params)] if user_line_params else []

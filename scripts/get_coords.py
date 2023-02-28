@@ -1,5 +1,7 @@
 import csv
+import pandas as pd
 import tabix
+from process_gene_gff import gff_to_db
 
 def variant_type(annotation):
     if annotation in ['synonymous_variant']:
@@ -126,12 +128,30 @@ def get_line(filepath,chr_num=-1):
     return line_coords
 
 def get_track(user_track_params, track_name):
+    filepath = user_track_params[track_name]['filepath'].lower().strip('.')
+    form = user_track_params[track_name]['format'].lower()
+
     boxes = []
-    db = user_track_params[track_name]['db']
-    seqid = user_track_params[track_name]['seqid']
-    for s in list(db.region(seqid=seqid, featuretype='exon')):
-        box_dict = dict(ID=s['gene_id'][0], start=s.start, end=s.end, compact_start=-1,
-                        compact_end=-1, strand=s.strand)  # more than one gene name?
-        boxes.append(box_dict)
+
+    if form in ['gtf', 'gtfdb', 'gff', 'gffdb']:
+        
+        db = gff_to_db(user_track_params[track_name]['filepath'], user_track_params[track_name]['filepath'] + '.db')
+        seqid = user_track_params[track_name]['seqid']
+        for s in list(db.region(seqid=seqid, featuretype='exon')):
+            # box_dict = dict(ID=s['gene_id'][0], start=s.start, end=s.end, compact_start=-1, compact_end=-1, strand=s.strand)
+            box_dict = dict(ID=s[user_track_params[track_name]['color_by']][0], start=s.start, end=s.end, compact_start=-1, compact_end=-1, strand=s.strand)
+            for field in user_track_params[track_name]['annotate_with']:
+                box_dict[field] = s[field]
+            boxes.append(box_dict)
+
+        user_track_params[track_name]['annotate_with'].append('strand') #automatically annotate gtf tracks with strand
+
+    elif form == 'bed': # does not support headers
+        df = pd.read_csv(user_track_params[track_name]['filepath'], names=user_track_params[track_name]['header'], sep='\t')
+        for idx,row in df.iterrows():
+            box_dict = dict(ID=row[user_track_params[track_name]['color_by']], start=row['start'], end=row['end'], compact_start=-1, compact_end=-1)
+            for field in user_track_params[track_name]['annotate_with']:
+                box_dict[field] = row[field]
+            boxes.append(box_dict)
 
     return boxes

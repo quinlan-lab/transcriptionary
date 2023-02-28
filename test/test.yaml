@@ -1,6 +1,6 @@
 ---
 output_format: 'html' #can be HTML, PNG, or SVG
-output_filepath: 'test/plot.html'
+output_filepath: '/uufs/chpc.utah.edu/common/home/u6038618/public_html/transcriptionary/plot.html'
 transcripts: 'all' #can be: (1) "transcript-names": list all possible transcript names for the given configuration file (does not create a plot); (2) "flattened-exons": overlay all transcripts to create a transcript with the largest possible exons (used to view all possible exonic variants); (3) "all": plot all transcripts, including `flattened-exons`; (4) "[`<transcript_name_1>`, `<transcript_name_2>`, ...]": specify transcripts
 ###Data params
 gff_path: 'test/data/test.gff3'  #if not database file, database will be created for you
@@ -50,7 +50,6 @@ min_lollipop_height: 15
 lollipop_radius: 5
 lollipop_line_width: 2
 variant_severity_colors:
-    # LOW: '#80b918'
     LOW: 'apple green'
     MODERATE: '#f6aa1c'
     MED: '#f6aa1c'
@@ -63,22 +62,32 @@ variant_severity_colors:
 ###User defined tracks:
 
 pfam_domains:
-    gtf_path: 'test/data/chr20.pfam.sorted.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db; if not database, database will be created for you
+    format: 'gtf'
+    filepath: 'test/data/chr20.pfam.sorted.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db; if not database, database will be created for you
     seqid: chr20
+    color_by: 'gene_id' #gtf field to color tracks by
+    annotate_with:
+        - 'transcript_id'
     colors: #leave empty to color all randomly
         Ion_trans: 'orange soda' #color these boxes as specified, any unspecified boxes colored randomly
         KCNQC3-Ank-G_bd: '#A09BE7'
 
 ucsc_repeats:
+    format: 'gtf'
     seqid: chr20
-    gtf_path: 'test/data/ucsc_repeats_grch38.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
+    color_by: 'gene_id' #gtf field to color tracks by
+    annotate_with:
+        - 'transcript_id'
+    filepath: 'test/data/ucsc_repeats_grch38.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db
     colors:
         trf: '#000000'
 
 ucsc_zebrafish_chain:
-    gtf_path: 'test/data/ucsc_zebrafish_chain.gtf' #must be .gff, .gtf, .gff.db, or .gtf.db
-    seqid: chr20
-    
+    format: 'bed'
+    filepath: 'test/data/ucsc_zebrafish_chain.bed' #must be .gff, .gtf, .gff.db, or .gtf.db
+    header: ['chrom', 'start', 'end', 'contig'] #list of field names in order (does not support BED fields with header)
+    color_by: 'contig' #bed field to color tracks by
+    annotate_with: #bed fields to annotate    
 ...
 ---
 ###User defined axes:

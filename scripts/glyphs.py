@@ -234,19 +234,18 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     circle_glyph = plot.circle('x', 'y1_circle', source=source, radius='r', radius_units='screen', fill_color='white',
                                fill_alpha=0, line_color='colors', line_width=line_width + 0.5, line_alpha='line_alpha')
     circle_glyph.hover_glyph = Circle(x='x', y='y1_circle', radius='r', radius_units='screen', fill_color='white',
-                                      fill_alpha=0, line_color='hover_colors', line_width=line_width + 0.5,
-                                      line_alpha='line_alpha')
+                                      fill_alpha=0, line_color='hover_colors', line_width=line_width + 0.5, line_alpha='line_alpha')
     circle_glyph.nonselection_glyph = None
     return segment_glyph, circle_glyph, allele_counts, allele_frequencies
 
-
-def add_track_glyph(plot, tracks, height, y_pos):
+def add_track_glyph(user_track_params, track_name, plot, tracks, height, y_pos):
     tracks = [di for di in tracks if di['compact_start']>=0]
-    if not tracks: tracks = [{'ID': 'empty track', 'start': 0, 'end': 0, 'compact_start': 0, 'compact_end': 0, 'color': '#111111', 'strand': ''}]
+    if not tracks: 
+        tracks = [{'ID': 'empty track', 'start': 0, 'end': 0, 'compact_start': 0, 'compact_end': 0, 'color': '#111111', 'strand': ''}]
+        for field in user_track_params[track_name]['annotate_with']: tracks[0][field] = ''
     tracks = sorted(tracks, key=lambda di: di['end']-di['start'], reverse=True) #make sure smaller tracks are in front of larger tracks
     tracks_compact = [(di['compact_start'], di['compact_end']) for di in tracks]
-    tracks_original = [(di['start'], di['end']) for di in tracks]
-    track_names = [di['ID'] for di in tracks]
+    color_by = [di['ID'] for di in tracks]
     colors = [di['color'] for di in tracks]
 
     x = [center_feature(f) for f in tracks_compact]
@@ -256,27 +255,19 @@ def add_track_glyph(plot, tracks, height, y_pos):
     hover_colors = [lighten_hex_color(color, 40) for color in colors]
 
     ### METADATA ###
-    adj_start = [start for (start, end) in tracks_compact]
-    adj_end = [end for (start, end) in tracks_compact]
-    true_start = [start for (start, end) in tracks_original]
-    true_end = [end for (start, end) in tracks_original]
-    true_len = [end - start + 1 for (start, end) in tracks_original]  # +1 for 1 indexed coords
-    strand = [di['strand'] for di in tracks]
+    cds_dict = dict(x=x, y=y, w=w, h=h, colors=colors, hover_colors=hover_colors, color_by=color_by,
+        adj_start=[di['compact_start'] for di in tracks], adj_end=[di['compact_end'] for di in tracks],
+        true_start=[di['start'] for di in tracks], true_end=[di['end'] for di in tracks], true_len=[di['end'] - di['start'] + 1 for di in tracks])
 
-    source = ColumnDataSource(dict(x=x, y=y, w=w, h=h, colors=colors, hover_colors=hover_colors,
-                                   track_names=track_names,
-                                   adj_start=adj_start, adj_end=adj_end,
-                                   true_len=true_len, true_start=true_start, true_end=true_end,
-                                   strand=strand))
+    for field in user_track_params[track_name]['annotate_with']: cds_dict[field] = [di[field] for di in tracks]
 
-    track_glyph = plot.rect(source=source, x='x', y='y', width='w', height='h', height_units='screen',
-                             fill_color='colors', line_color='colors')
-    hover_glyph = Rect(x='x', y='y', width='hover_w', height='h', height_units='screen', fill_color='hover_colors',
-                       line_color='hover_colors')
+    source = ColumnDataSource(cds_dict)
+
+    track_glyph = plot.rect(source=source, x='x', y='y', width='w', height='h', height_units='screen', fill_color='colors', line_color='colors')
+    hover_glyph = Rect(x='x', y='y', width='hover_w', height='h', height_units='screen', fill_color='hover_colors', line_color='hover_colors')
     track_glyph.hover_glyph = hover_glyph
     track_glyph.nonselection_glyph = None
     return track_glyph
-
 
 def add_multi_line_glyph(plot_params, plot, xs_ls, ys_ls_unsmoothed, max_y=-1, k=1, y0=0, p=False, fill_area=False,
                          y_axis_name=None, line_color='black', line_width=2, line_alpha=1):
