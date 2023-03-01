@@ -4,12 +4,14 @@ transcriptionary takes user-defined parameters to create a static .html document
 
 Exons are annotated with coordinates and length.
 
-Variants are specified as .vcf, .csv, or .bed and are annotated in hover boxes with coordinate, allele count, allele frequency, mutation type, and VEP annotation. They are colored by severity. Radio buttons in the plot give the option to view lollipop heights as allele count or allele frequency, and linear or log scale. 
+Variants are specified as VCF or BED and are annotated with interactive hover boxes. For VCF, lollipops are annotated with allele count, allele frequency, mutation type, VEP annotations, and are colored by severity. Radio buttons in the plot give the option to view lollipop heights as allele count or allele frequency, and linear or log scale. 
 If a VCF with VEP annotations is provided, lollipops will be categorized as LOW, MED, or HIGH impact as per [geneimpacts](https://github.com/brentp/geneimpacts) and colored accordingly.
 
-Tracks are specified as .gtf and are annotated with name, coordinates, and length. Colors can be specified by the user or chosen randomly from a color palette.
+Tracks are specified as GTF or BED and are annotated with name, coordinates, and length, along with other specified fields from GTF. Colors can be specified by the user or chosen randomly from a color palette.
 
-Coordinate-based information can be provided as .csv/.tsv (point-based) or .bedgraph (interval-based). The user can customize the y axis with tick precision and scientific notation. The user can specify the line color, alpha value, and choose whether to fill in the area under the curve.
+Coordinate-based information can be provided as CSV/TSV (point-based) or BEDGRAPH (interval-based). The user can customize the y axis with tick precision and scientific notation. The user can specify the line color, alpha value, and choose whether to fill in the area under the curve.
+
+Headers are not supported for BED files. BED files must have at least three columns, which should be `chrom`, `start`, and `end`.
 
 Plots can be output as HTML, PNG, or SVG.
 
@@ -36,8 +38,6 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 
 `gff_path`: path to gff (for feature coordinates). When running the first time, a `gff.db` file will be created for you. When rerunning, can change this parameter to the .gff.db file to avoid recreating it.
 
-`variant_path`: path to vcf, csv, or bed (for variant coordinates)
-
 `gene_name`: gene name
 
 `seqid`: chromosome
@@ -61,23 +61,38 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 `track_palette`: palette to draw random track colors from; can be any palette in default_colors/palettes.yaml
 
 `plot_variants`: show lollipops (boolean)
+`variant_format`: file format of variant file, can be VCF or BED
+`filepath`: path to VCF or BED (for variant coordinates)
+`header`: list of column names (BED only)
 `seqid`: chromosome
+`info_annotations`: INFO fields to add to hover boxes (VCF only)
+`vep`: VCF only; leave empty if not VEP annotated
+- `field_name`: name of INFO field with VEP string (e.g. vep, ann, csq)
+- `vep_fields`: vep fields to add to hover annotations
+    - `<vep_field>`
+
+`default_y_axis`: set lollipop heights according to allele count (`AC`) or allele frequency (`AF`) by default (can be toggled with HTML output)
+`default_y_axis_scale`: scale lollipop heights according on a linear (`linear`) or log (`log`) scale by default (can be toggled with HTML output)
+
 `min_lollipop_height`: minimum height of lollipop in pixels; default 15
 `lollipop_radius`: radius of lollipop in pixels; default 5
 `lollipop_line_width`: line width of lollipop in pixels; default 2
 `variant_severity_colors`: specify lollipop colors by variant severity; use hex codes or predefined colors from default_colors/named_colors.yaml
-- LOW: default '#80b918'
-- MODERATE: default '#f6aa1c'
-- HIGH: default '#e01e37'
-- MODIFIER: default '#778da9'
+- LOW:
+- MED:
+- HIGH:
+- NONE:
 
 `track_palette`: any palette in default_colors/palettes.yaml
 
 `<track_name>`: track label
-- `gtf_path`: path to .gtf with track coordinate information 
+- `format`: file format of track file, can be GTF or BED
+- `filepath`: path to file with track coordinate information 
 - `seqid`: chromosome
-- `colors`: specify colors by domain name; if no color is specified for a domain name, it will be chosen from the palette specified in track_palette
-      -`<domain_name>`: (can be hex code or any name from default_colors/named_colors.yaml)
+- `header`: list of column names (BED only)
+- `color_by`: field to color boxes by
+- `annotate_with`: fields to annotate with
+    - `<field_name>`: (for BED, must be from header)
 
 `<axis_name>`:
 - `y_axis_label`: y axis label
@@ -95,7 +110,7 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 
 ## Run Test
 ```
-python scripts/transcriptionary.py test/test.yaml all --output test/plot.html
+python scripts/transcriptionary.py test/test.yaml
 ```
 
 ## How to customize colors and color palettes

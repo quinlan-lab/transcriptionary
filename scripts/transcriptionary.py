@@ -27,23 +27,32 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
     transcript_ID = transcript_dict['ID'].split(':')[-1]
     
     ### VARIANTS ###
+
     if variant_ls:
         project_coords.map_point(variant_ls, transcript_dict['exons'])
-        ray_glyph,circle_glyph,allele_counts,allele_frequencies = add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls)
+        ray_glyph,circle_glyph = add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls)
+        ray_glyph,circle_glyph = add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls)
 
         if ray_glyph and circle_glyph:
-            tooltips_variants = [('Position (compact)', '@x'), ('Position (chr)', '@pos'), 
-                                   ('Allele count', '@allele_counts'), ('Allele number', '@allele_numbers'), ('Allele frequency', '@allele_frequencies'), 
-                                   ('Change', '@ref > @alt'), ('Severity', '@sev')]
-            tooltips_variants.extend([(info_field, '@'+info_field) for info_field in variant_params['info_annotations']]) #add user defined INFO fields to hover box annotation
-            if variant_params['vep']: tooltips_variants.extend([(vep_field, '@'+vep_field) for vep_field in variant_params['vep']['vep_fields']]) #add user defined VEP field to hover box annotation
+            tooltips_variants = [('Position (compact)', '@x'), ('Position (chr)', '@pos'), ('Severity', '@sev')]
+
+            if variant_params['variant_format'].lower().strip('.') == 'vcf': 
+                tooltips_variants.extend([('Allele count', '@allele_counts'), ('Allele number', '@allele_numbers'), ('Allele frequency', '@allele_frequencies'), ('Ref', '@ref'), ('Alt', '@alt')])
+                tooltips_variants.extend([(info_field, '@'+info_field) for info_field in variant_params['info_annotations']]) #add user defined INFO fields to hover box annotation
+                if variant_params['vep']: tooltips_variants.extend([(vep_field, '@'+vep_field) for vep_field in variant_params['vep']['vep_fields']]) #add user defined VEP field to hover box annotation
 
             plot.add_tools(HoverTool(tooltips=tooltips_variants, renderers=[circle_glyph,ray_glyph], point_policy='follow_mouse', attachment='below'))
+
         glyph_dict['Variant'].extend([ray_glyph,circle_glyph])
 
         if variant_params['add_variant_axis']:
 
             def log10(f): return np.log10(f) if f > 0 else 0
+
+            allele_counts = [v['allele_count'] for v in variant_ls]
+            allele_numbers = [v['allele_number'] for v in variant_ls]
+            allele_frequencies = [v['allele_frequency'] for v in variant_ls]
+
 
             variant_axes['count_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele count', allele_counts, visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'linear')))
             variant_axes['count_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele count)', [log10(c) for c in allele_counts], visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'log')))

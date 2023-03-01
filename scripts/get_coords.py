@@ -1,22 +1,9 @@
 import csv
 import pandas as pd
-import tabix
 from process_gene_gff import gff_to_db
 
-def variant_type(annotation):
-    if annotation in ['synonymous_variant']:
-        return 'LOW'
-    if annotation in ['missense_variant', 'inframe_deletion', 'inframe_insertion','stop_lost',]:
-        return 'MODERATE'
-    if annotation in ['splice_acceptor_variant','frameshift_variant','splice_donor_variant','stop_gained',]:
-        return 'HIGH'
-    if annotation in ['3_prime_UTR_variant', '5_prime_UTR_variant', 'splice_region_variant','intron_variant',]:
-        return 'MODIFIER'
-    #print('No classification for variant type {}; classified as "other"'.format(annotation))
-    return 'MODIFIER'
-
 def get_variants(variant_params, transcripts, start, end):
-    filepath = variant_params['variant_path']
+    filepath = variant_params['filepath']
     seqid = variant_params['seqid']
 
     transcript_IDs = [transcripts[key]['ID'].split(':')[-1] for key in transcripts]
@@ -73,24 +60,21 @@ def get_variants(variant_params, transcripts, start, end):
 
     def get_variants_bed(bed_path):
         variant_ls = []
-        tb = tabix.open(bed_path)
-        #TODO cast seqid in parse_args
-        for r in tb.query(str(seqid),start,end):
-            variant_ls.append(dict(pos=int(r[1]), compact_pos=-1, ref=r[3], alt=r[4], #adding 1.4m bc this bed is on old build
-                             annotation=r[8], severity=variant_type(r[8]),
-                             allele_count=-1,
-                             allele_number=-1,
-                             allele_frequency=-1))
+
+        df = pd.read_csv(bed_path, names=variant_params['header'], sep='\t') 
+        for idx,row in df.iterrows():
+            if row.iloc[0] != variant_params['seqid']: continue
+            di_variant = dict(pos=row.iloc[1], compact_start=-1)
+            for transcript_ID in transcript_IDs: di_variant[transcript_ID + '_severity'] = 'NONE'
+            variant_ls.append(di_variant)
+
         return variant_ls
     
-    if filepath.split('.')[-2] == 'vcf':
+    form = variant_params['variant_format'].lower().strip('.')
+    if form == 'vcf':
         variant_ls = get_variants_vcf(filepath)
-    
-    elif filepath.split('.')[-1] == 'csv':
-        variant_ls = get_variants_csv(filepath)
 
-    #TODO what to do about tabix'd vs non tabix'd?
-    elif '.bed' in filepath:
+    elif form == 'bed':
         variant_ls = get_variants_bed(filepath)
         
     else: raise ValueError('Invalid filepath: {}'.format(filepath))
@@ -120,17 +104,14 @@ def get_line(filepath,chr_num=-1):
     return line_coords
 
 def get_track(user_track_params, track_name):
-    filepath = user_track_params[track_name]['filepath'].lower().strip('.')
     form = user_track_params[track_name]['format'].lower()
 
     boxes = []
 
-    if form in ['gtf', 'gtfdb', 'gff', 'gffdb']:
-        
+    if form in ['gtf', 'gff']:
         db = gff_to_db(user_track_params[track_name]['filepath'], user_track_params[track_name]['filepath'] + '.db')
         seqid = user_track_params[track_name]['seqid']
         for s in list(db.region(seqid=seqid, featuretype='exon')):
-            # box_dict = dict(ID=s['gene_id'][0], start=s.start, end=s.end, compact_start=-1, compact_end=-1, strand=s.strand)
             box_dict = dict(ID=s[user_track_params[track_name]['color_by']][0], start=s.start, end=s.end, compact_start=-1, compact_end=-1, strand=s.strand)
             for field in user_track_params[track_name]['annotate_with']:
                 box_dict[field] = s[field]
@@ -141,7 +122,8 @@ def get_track(user_track_params, track_name):
     elif form == 'bed': # does not support headers
         df = pd.read_csv(user_track_params[track_name]['filepath'], names=user_track_params[track_name]['header'], sep='\t')
         for idx,row in df.iterrows():
-            box_dict = dict(ID=row[user_track_params[track_name]['color_by']], start=row['start'], end=row['end'], compact_start=-1, compact_end=-1)
+            if row.iloc[0] != user_track_params[track_name]['seqid']: continue
+            box_dict = dict(ID=row[user_track_params[track_name]['color_by']], start=row.iloc[1], end=row.iloc[2], compact_start=-1, compact_end=-1)
             for field in user_track_params[track_name]['annotate_with']:
                 box_dict[field] = row[field]
             boxes.append(box_dict)

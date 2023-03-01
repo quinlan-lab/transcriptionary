@@ -4,7 +4,6 @@ output_filepath: '/uufs/chpc.utah.edu/common/home/u6038618/public_html/transcrip
 transcripts: 'all' #can be: (1) "transcript-names": list all possible transcript names for the given configuration file (does not create a plot); (2) "flattened-exons": overlay all transcripts to create a transcript with the largest possible exons (used to view all possible exonic variants); (3) "all": plot all transcripts, including `flattened-exons`; (4) "[`<transcript_name_1>`, `<transcript_name_2>`, ...]": specify transcripts
 ###Data params
 gff_path: 'test/data/test.gff3'  #if not database file, database will be created for you
-# variant_path: 'test/gnomAD_v3.1.1_ENSG00000075043_2021_09_16_16_02_28.csv'
 
 ####Plot params
 gene_name: 'KCNQ2'
@@ -31,9 +30,12 @@ track_palette: 'bang_wong_palette' #palette to draw random track colors from; ca
 ---
 #variants
 plot_variants: True
-variant_path: 'test/data/gnomad.exomes.chr20.subset.vcf.gz'
+
+#VCF example
+variant_format: 'vcf'
+filepath: 'test/data/gnomad.exomes.chr20.subset.vcf.gz'
 seqid: chr20
-info_annotations: #INFO fields to add to hover annotations (VCF only)
+info_annotations: #INFO fields to add to hover boxes (VCF only)
     - pab_max
     - popmax
 vep: #VCF only; leave empty if not VEP annotated
@@ -42,6 +44,12 @@ vep: #VCF only; leave empty if not VEP annotated
     - SYMBOL
     - Amino_acids
     - Consequence
+
+#BED example
+# variant_format: 'bed' #can be VCF or BED
+# filepath: 'test/data/gnomad_v3.1.1_KCNQ2_SNVs.bed'
+# header: ['Chromosome', 'Start', 'End', 'Reference', 'Alternate', 'Allele Count', 'Allele Number', 'Allele Frequency', 'VEP Annotation'] # BED only
+# seqid: chr20
 
 default_y_axis: 'AC' # can be toggled with HTML output
 default_y_axis_scale: 'log' # can be toggled with HTML output
@@ -60,11 +68,11 @@ variant_severity_colors:
 ###User defined tracks:
 
 pfam_domains:
-    format: 'gtf'
+    format: 'gtf' #can be GTF or BED
     filepath: 'test/data/chr20.pfam.sorted.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db; if not database, database will be created for you
     seqid: chr20
     color_by: 'gene_id' #gtf field to color tracks by
-    annotate_with:
+    annotate_with: #fields to annotate in hover box
         - 'transcript_id'
     colors: #leave empty to color all randomly
         Ion_trans: 'orange soda' #color these boxes as specified, any unspecified boxes colored randomly
@@ -74,7 +82,7 @@ ucsc_repeats:
     format: 'gtf'
     seqid: chr20
     color_by: 'gene_id' #gtf field to color tracks by
-    annotate_with:
+    annotate_with: #fields to annotate in hover box
         - 'transcript_id'
     filepath: 'test/data/ucsc_repeats_grch38.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db
     colors:
@@ -83,6 +91,7 @@ ucsc_repeats:
 ucsc_zebrafish_chain:
     format: 'bed'
     filepath: 'test/data/ucsc_zebrafish_chain.bed' #must be .gff, .gtf, .gff.db, or .gtf.db
+    seqid: chr20
     header: ['chrom', 'start', 'end', 'contig'] #list of field names in order (does not support BED fields with header)
     color_by: 'contig' #bed field to color tracks by
     annotate_with: #bed fields to annotate    

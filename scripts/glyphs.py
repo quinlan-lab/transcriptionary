@@ -155,11 +155,9 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     if N == 0: 
         variant_params['add_variant_axis'] = False
         return None, None, [0], [0]
-    allele_counts = [v['allele_count'] for v in variant_ls]
-    allele_numbers = [v['allele_number'] for v in variant_ls]
-    allele_frequencies = [v['allele_frequency'] for v in variant_ls]
 
-    if sum(allele_frequencies) < 0: #TODO case where freq data but not cts
+    if variant_params['variant_format'].lower().strip('.') == 'bed': variant_params['add_variant_axis'] = False
+    elif sum([v['allele_frequency'] for v in variant_ls]) < 0:
         variant_params['add_variant_axis'] = False
     else: variant_params['add_variant_axis'] = True
 
@@ -170,9 +168,7 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
         ls_fn = [fn(x) for x in ls]
         for x in ls_fn: 
             if x < 0: raise RuntimeError('Lollipop height cannot be negative')
-        y1_circle = [c * (plot_params['plot_height'] - plot_params['y0'] - variant_params[
-            'min_lollipop_height'] - variant_params['lollipop_radius'] - line_width - 2) / max([c for c in ls_fn]) + plot_params['y0'] +
-                     variant_params['min_lollipop_height'] for c in ls_fn]
+        y1_circle = [c * (plot_params['plot_height'] - plot_params['y0'] - variant_params['min_lollipop_height'] - variant_params['lollipop_radius'] - line_width - 2) / max([c for c in ls_fn]) + plot_params['y0'] + variant_params['min_lollipop_height'] for c in ls_fn]
         y1_segment = [y - variant_params['lollipop_radius'] for y in y1_circle]
         return y1_circle, y1_segment
 
@@ -183,6 +179,11 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     hover_colors = [lighten_hex_color(c, 40) for c in colors]
 
     if variant_params['add_variant_axis']: 
+
+        allele_counts = [v['allele_count'] for v in variant_ls]
+        allele_numbers = [v['allele_number'] for v in variant_ls]
+        allele_frequencies = [v['allele_frequency'] for v in variant_ls]
+
         #set original lollipop ys based on default_y_axis (allele count or allele freq) and default_y_axis_scale (log or linear)
         if variant_params ['default_y_axis'] == 'AC': ys = allele_counts
         elif variant_params['default_y_axis'] == 'AF': ys = allele_frequencies
@@ -194,19 +195,24 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
         y1_circle,y1_segment = get_y1(fn, ys)
     else:
         #if lollipop heights don't hold meaning, set them to 1/2 max height
-        y1_circle,y1_segment = get_y1(lambda x: x/2, [1 for v in variant_ls])
+        y1_circle,y1_segment = get_y1(lambda x: x, [1 for v in variant_ls])
         y1_circle = [y1/2 for y1 in y1_circle] 
-        y1_segment = [y1/2 for y1 in y1_segment]
+        y1_segment = [y1/2 - line_width for y1 in y1_segment]
 
-    cds_dict = dict(x=x, r=r, y0=y0s, y1_circle=y1_circle, y1_segment=y1_segment, 
-                                   allele_counts=allele_counts,
-                                   allele_numbers=allele_numbers,
-                                   allele_frequencies=allele_frequencies,
-                                   pos=[v['pos'] for v in variant_ls],
-                                   ref=[v['ref'] for v in variant_ls],
-                                   alt=[v['alt'] for v in variant_ls],
-                                   sev=[v[transcript_ID + '_severity'] for v in variant_ls],
-                                   colors=colors, hover_colors=hover_colors, line_alpha=[1 for v in variant_ls])
+    cds_dict = dict(x=x, r=r, y0=y0s, y1_circle=y1_circle, y1_segment=y1_segment,
+                                pos=[v['pos'] for v in variant_ls], sev=[v[transcript_ID + '_severity'] for v in variant_ls],
+                                colors=colors, hover_colors=hover_colors, line_alpha=[1 for v in variant_ls])
+
+    if variant_params['variant_format'].lower().strip('.') == 'vcf':
+        allele_counts = [v['allele_count'] for v in variant_ls]
+        allele_numbers = [v['allele_number'] for v in variant_ls]
+        allele_frequencies = [v['allele_frequency'] for v in variant_ls]
+
+        cds_dict['allele_counts']=allele_counts
+        cds_dict['allele_numbers']=allele_numbers
+        cds_dict['allele_frequencies']=allele_frequencies
+        cds_dict['ref']=[v['ref'] for v in variant_ls]
+        cds_dict['alt']=[v['alt'] for v in variant_ls]
 
     for info_field in variant_params['info_annotations']: cds_dict[info_field] = [v[info_field] for v in variant_ls]
     if variant_params['vep']: 
@@ -237,7 +243,8 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     circle_glyph.hover_glyph = Circle(x='x', y='y1_circle', radius='r', radius_units='screen', fill_color='white',
                                       fill_alpha=0, line_color='hover_colors', line_width=line_width + 0.5, line_alpha='line_alpha')
     circle_glyph.nonselection_glyph = None
-    return segment_glyph, circle_glyph, allele_counts, allele_frequencies
+    # return segment_glyph, circle_glyph, allele_counts, allele_frequencies
+    return segment_glyph, circle_glyph
 
 def add_track_glyph(user_track_params, track_name, plot, tracks, height, y_pos):
     tracks = [di for di in tracks if di['compact_start']>=0]
