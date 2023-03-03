@@ -69,7 +69,7 @@ variant_severity_colors:
 
 pfam_domains:
     format: 'gtf' #can be GTF or BED
-    filepath: 'test/data/chr20.pfam.sorted.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db; if not database, database will be created for you
+    filepath: 'test/data/chr20.pfam.sorted.gtf.db' #must be .bed, .gff, .gtf, .gff.db, or .gtf.db; if not gff/gtf database, database will be created for you
     seqid: chr20
     color_by: 'gene_id' #gtf field to color tracks by
     annotate_with: #fields to annotate in hover box
@@ -79,18 +79,18 @@ pfam_domains:
         KCNQC3-Ank-G_bd: '#A09BE7'
 
 ucsc_repeats:
-    format: 'gtf'
+    format: 'gtf' #can be GTF or BED
     seqid: chr20
     color_by: 'gene_id' #gtf field to color tracks by
     annotate_with: #fields to annotate in hover box
         - 'transcript_id'
-    filepath: 'test/data/ucsc_repeats_grch38.gtf.db' #must be .gff, .gtf, .gff.db, or .gtf.db
+    filepath: 'test/data/ucsc_repeats_grch38.gtf.db' #must be .bed, .gff, .gtf, .gff.db, or .gtf.db; if not gff/gtf database, database will be created for you
     colors:
         trf: '#000000'
 
 ucsc_zebrafish_chain:
-    format: 'bed'
-    filepath: 'test/data/ucsc_zebrafish_chain.bed' #must be .gff, .gtf, .gff.db, or .gtf.db
+    format: 'bed' #can be GTF or BED
+    filepath: 'test/data/ucsc_zebrafish_chain.bed' #must be .bed, .gff, .gtf, .gff.db, or .gtf.db; if not gff/gtf database, database will be created for you
     seqid: chr20
     header: ['chrom', 'start', 'end', 'contig'] #list of field names in order (does not support BED fields with header)
     color_by: 'contig' #bed field to color tracks by
@@ -109,6 +109,7 @@ Coverage:
     lines:
         Coverage:
             #line params
+            format: 'bedgraph' #can be BEDGRAPH, CSV, or TSV
             filepath: 'test/data/coverage.bedgraph'
             seqid: '20'
             color: 'zomp'
@@ -123,12 +124,14 @@ Mutation counts:
     smoothing_slider: True
     lines:
         Expected mutation counts: 
+            format: 'csv' #can be BEDGRAPH, CSV, or TSV
             filepath: 'test/data/expected_mut_counts.csv'
             seqid: 'chr20'
             color: '#f26419'
             alpha: 1
             fill_area: False
         Observed mutation counts:
+            format: 'tsv' #can be BEDGRAPH, CSV, or TSV
             filepath: 'test/data/observed_mut_counts.tsv'
             seqid: 'chr20'
             color: '#19a7f2'

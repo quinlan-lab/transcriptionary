@@ -81,24 +81,28 @@ def get_variants(variant_params, transcripts, start, end):
 
     return variant_ls
 
-def get_line(filepath,chr_num=-1):
-    fi = open(filepath,'r')
-    ext = filepath.split('.')[-1]
+def get_line(user_line_params,axis_name,line_name):
 
-    if ext == 'bedgraph' or ext == 'tsv':
+    filepath = user_line_params[axis_name]['lines'][line_name]['filepath']
+    form = user_line_params[axis_name]['lines'][line_name]['format'].lower().strip('.')
+    seqid = user_line_params[axis_name]['lines'][line_name]['seqid'].lower().strip('.')
+
+    fi = open(filepath,'r')
+
+    if form == 'bedgraph' or form == 'tsv':
         line_coords = [line.strip().split('\t') for line in fi.readlines()]
-    elif ext == 'csv':
+    elif form == 'csv':
         line_coords = [line.strip().split(',') for line in fi.readlines()]
     else:
         raise ValueError('Invalid file format: ' + filepath)
 
-    if ext == 'bedgraph':
+    if form == 'bedgraph':
         line_coords = [{'chrom': chrom,'start': int(start), 'end': int(end), 'y': float(y)} for (chrom, start, end, y) in line_coords]
-        if chr_num >= 0: coords = [coord for coord in line_coords if coord['chrom']==chr_num]
 
-    elif ext == 'tsv' or ext == 'csv':
+    elif form == 'tsv' or form == 'csv':
         line_coords = [{'chrom': chrom, 'pos': float(x), 'y': float(y)} for (chrom, x, y) in line_coords]
-        if chr_num >= 0: coords = [coord for coord in line_coords if coord['chrom']==chr_num]
+    
+    line_coords = [coord for coord in line_coords if coord['chrom'] == seqid]
 
     fi.close()
     return line_coords

@@ -219,7 +219,8 @@ def transcriptionary():
     user_lines = {axis_name:{} for axis_name in user_line_params}
     for axis_name in user_line_params:
         for line_name in user_line_params[axis_name]['lines']:
-            user_lines[axis_name][line_name] = get_line(user_line_params[axis_name]['lines'][line_name]['filepath'])
+            # user_lines[axis_name][line_name] = get_line(user_line_params[axis_name]['lines'][line_name]['filepath'])
+            user_lines[axis_name][line_name] = get_line(user_line_params, axis_name, line_name)
     
     plot_ls = []
     glyph_dict = dict(exon=[],UTRs=[],Variant=[],Direction=[])
