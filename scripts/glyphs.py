@@ -154,7 +154,7 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     N = len(variant_ls)
     if N == 0: 
         variant_params['add_variant_axis'] = False
-        return None, None, [0], [0]
+        return None, None
 
     if variant_params['variant_format'].lower().strip('.') == 'bed': variant_params['add_variant_axis'] = False
     elif sum([v['allele_frequency'] for v in variant_ls]) < 0:

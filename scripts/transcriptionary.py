@@ -30,8 +30,10 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
 
     if variant_ls:
         project_coords.map_point(variant_ls, transcript_dict['exons'])
-        ray_glyph,circle_glyph = add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls)
-        ray_glyph,circle_glyph = add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls)
+        try:
+            ray_glyph,circle_glyph = add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls)
+        except:
+            print(add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls))
 
         if ray_glyph and circle_glyph:
             tooltips_variants = [('Position (compact)', '@x'), ('Position (chr)', '@pos'), ('Severity', '@sev')]
@@ -189,9 +191,6 @@ def parse_args():
 
     ### TRANSCRIPTS ###
     transcript_IDs = plot_params['transcripts']
-    if transcript_IDs not in ['all', 'transcript_names']:
-        transcript_IDs = transcript_IDs.strip('[').strip(']').split(',')
-        transcript_IDs = [t.strip('\'') for t in transcript_IDs]
 
     ### OUTPUT ###
     output_format = plot_params['output_format'].lower().strip('.')
@@ -219,7 +218,6 @@ def transcriptionary():
     user_lines = {axis_name:{} for axis_name in user_line_params}
     for axis_name in user_line_params:
         for line_name in user_line_params[axis_name]['lines']:
-            # user_lines[axis_name][line_name] = get_line(user_line_params[axis_name]['lines'][line_name]['filepath'])
             user_lines[axis_name][line_name] = get_line(user_line_params, axis_name, line_name)
     
     plot_ls = []

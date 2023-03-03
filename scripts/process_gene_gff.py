@@ -27,7 +27,7 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
         exons_all = gff_db.children(gene_feature, featuretype='exon')
         exons_all = [{'start': e.start, 'end': e.end} for e in exons_all]
         exons_all = project_coords.flatten_exons(exons_all)
-        transcript_dict['flattened-exons'] = dict(ID='flattened_exons', chr_num=chr_num, exons=exons_all, direction='', UTRs=[])    
+        transcript_dict['flattened-exons'] = dict(ID='flattened-exons', chr_num=chr_num, exons=exons_all, direction='', UTRs=[])    
         
     def get_UTRs(transcript):
         if not plot_params['plot_UTRs']: return []
@@ -46,7 +46,7 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
     transcripts = list(gff_db.children(gene_feature, featuretype='mRNA'))
     if transcript_IDs != 'all':
         for ID in transcript_IDs:
-            if ID not in [t['Name'][0] for t in transcripts]: print('No such transcript {}; skipping'.format(ID))
+            if ID not in [t['Name'][0] for t in transcripts] and ID != 'flattened-exons': print('No such transcript {}; skipping'.format(ID))
         transcripts = [t for t in transcripts if t['Name'][0] in transcript_IDs]
 
     for t in transcripts:
