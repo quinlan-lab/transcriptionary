@@ -43,11 +43,12 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
         return UTRs
                 
     #indiv mRNAs
-    transcripts = list(gff_db.children(gene_feature, featuretype='mRNA'))
+    transcripts = list(gff_db.children(gene_feature, featuretype='mRNA')) + list(gff_db.children(gene_feature, featuretype='transcript'))
+    possible_transcripts = [t['Name'][0] for t in transcripts] + [t['ID'][0] for t in transcripts] + [t['ID'][0].split(':')[-1] for t in transcripts] #user can access by Name (ex. KCNQ2-201), ID (ex. transcript:ENST00000344425), or the ID after the colon (ex. ENST00000344425)
     if transcript_IDs != 'all':
         for ID in transcript_IDs:
-            if ID not in [t['Name'][0] for t in transcripts] and ID != 'flattened-exons': print('No such transcript {}; skipping'.format(ID))
-        transcripts = [t for t in transcripts if t['Name'][0] in transcript_IDs]
+            if ID not in possible_transcripts and ID != 'flattened-exons': print('No such transcript {}; skipping'.format(ID))
+        transcripts = [t for t in transcripts if t['Name'][0]  in transcript_IDs or t['ID'][0] in transcript_IDs or t['ID'][0].split(':')[-1] in transcript_IDs]
 
     for t in transcripts:
         exons = list(gff_db.children(t, featuretype='exon'))
