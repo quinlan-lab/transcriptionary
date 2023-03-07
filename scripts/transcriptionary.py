@@ -235,9 +235,16 @@ def transcriptionary():
         plot,glyph_dict = plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcripts[ID], glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
         plot_ls.append(plot)
 
+    
+
     legend = [add_legend(user_line_params)] if user_line_params else []
 
     if output_format == 'html': #only add widgets for HTML  
+
+        empty_plot = figure(plot_height=1500,outline_line_color=None) #for HTML, add white space at bottom so hover boxes are not cut off 
+        empty_plot.line(x=[0], y=[0]) #avoid empty plot warning
+        empty_plot.yaxis.visible = empty_plot.xaxis.visible = empty_plot.grid.visible = False
+        plot_ls.append(empty_plot) 
 
         from bokeh.plotting import output_file, save
 
