@@ -167,8 +167,12 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     def get_y1(fn, ls):
         ls_fn = [fn(x) for x in ls]
         for x in ls_fn: 
-            if x < 0: raise RuntimeError('Lollipop height cannot be negative')
-        y1_circle = [c * (plot_params['plot_height'] - plot_params['y0'] - variant_params['min_lollipop_height'] - variant_params['lollipop_radius'] - line_width - 2) / max([c for c in ls_fn]) + plot_params['y0'] + variant_params['min_lollipop_height'] for c in ls_fn]
+            if x < 0: # if log AF
+                min_y = min(ls_fn)
+                ls_fn = [c - min_y if c != 0 else 0 for c in ls_fn]
+                continue
+            # if x < 0: raise RuntimeError('Lollipop height cannot be negative')
+        y1_circle = [c * (plot_params['plot_height'] - plot_params['y0'] - variant_params['min_lollipop_height'] - variant_params['lollipop_radius'] - line_width - 2) / max(ls_fn) + plot_params['y0'] + variant_params['min_lollipop_height'] for c in ls_fn]
         y1_segment = [y - variant_params['lollipop_radius'] for y in y1_circle]
         return y1_circle, y1_segment
 
@@ -190,7 +194,8 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
 
         if variant_params['default_y_axis_scale'] == 'linear': fn = lambda x: x
         elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AC': fn = lambda x: np.log10(x) if x > 0 else 0
-        elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AF': fn = lambda x: -np.log10(x) if x > 0 else 0
+        # elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AF': fn = lambda x: -np.log10(x) if x > 0 else 0
+        elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AF': fn = lambda x: np.log10(x) if x > 0 else 0
         
         y1_circle,y1_segment = get_y1(fn, ys)
     else:
@@ -222,7 +227,8 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
         y1_ci_li_ct, y1_sg_li_ct = get_y1(lambda x: x, allele_counts)
         y1_ci_lg_ct, y1_sg_lg_ct = get_y1(lambda x: np.log10(x) if x > 0 else 0, allele_counts)
         y1_ci_li_fr, y1_sg_li_fr = get_y1(lambda x: x, allele_frequencies)
-        y1_ci_lg_fr, y1_sg_lg_fr = get_y1(lambda x: -np.log10(x) if x > 0 else 0, allele_frequencies)
+        # y1_ci_lg_fr, y1_sg_lg_fr = get_y1(lambda x: -np.log10(x) if x > 0 else 0, allele_frequencies)
+        y1_ci_lg_fr, y1_sg_lg_fr = get_y1(lambda x: np.log10(x) if x > 0 else 0, allele_frequencies)
 
         variant_axis_dict = dict(
             y1_ci_li_ct=y1_ci_li_ct, y1_sg_li_ct=y1_sg_li_ct,

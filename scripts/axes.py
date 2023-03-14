@@ -1,4 +1,5 @@
 from bokeh.models import LinearAxis,Range1d
+import math
 
 def add_axis(plot, plot_params, axis_label, y_max, min_tick, max_tick, tick_precision, tick_scientific_notation, y_min=0, num_ticks=3, axis_position='right', visible=True):
 
@@ -21,8 +22,9 @@ def add_user_axis(plot, plot_params, user_line_params, axis_name, y_max, min_tic
     return axis
 
 def add_variant_axis(plot_params, variant_params, plot, axis_label, allele_vals, visible=True):
-    y_min = min(allele_vals)
-    y_max = max(allele_vals)
+    else:
+        y_min = min(allele_vals)
+        y_max = max(allele_vals)
     min_tick = plot_params['y0']+variant_params['min_lollipop_height']
     max_tick = plot_params['plot_height']-variant_params['lollipop_radius']-variant_params['lollipop_line_width']
     tick_precision = 2 #TODO

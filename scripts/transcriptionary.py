@@ -48,6 +48,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
         glyph_dict['Variant'].extend([ray_glyph,circle_glyph])
 
         if variant_params['add_variant_axis']:
+            variant_ls = [v for v in variant_ls if v['compact_pos'] >= 0]
 
             def log10(f): return np.log10(f) if f > 0 else 0
 
@@ -55,11 +56,10 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
             allele_numbers = [v['allele_number'] for v in variant_ls]
             allele_frequencies = [v['allele_frequency'] for v in variant_ls]
 
-
             variant_axes['count_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele count', allele_counts, visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'linear')))
             variant_axes['count_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele count)', [log10(c) for c in allele_counts], visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'log')))
             variant_axes['frequency_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele frequency', allele_frequencies, visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'linear')))
-            variant_axes['frequency_log'].append(add_variant_axis(plot_params, variant_params, plot, '-Log(Allele frequency)', [-log10(f) for f in allele_frequencies], visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'log')))
+            variant_axes['frequency_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele frequency)', [log10(f) for f in allele_frequencies if f != 0], visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'log'))) #don't include 0s since they will just be plotted as min
 
     else: variant_params['add_variant_axis'] = False
 
@@ -234,8 +234,6 @@ def transcriptionary():
         if transcripts[ID]['direction']: title += ' ({})'.format(transcripts[ID]['direction'])
         plot,glyph_dict = plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcripts[ID], glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
         plot_ls.append(plot)
-
-    
 
     legend = [add_legend(user_line_params)] if user_line_params else []
 
