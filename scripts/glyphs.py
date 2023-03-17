@@ -1,6 +1,7 @@
 import numpy as np
 from bokeh.models import ColumnDataSource, Rect, Segment, Circle, MultiPolygons
 from colors import  color_variants,lighten_hex_color
+import math
 
 def center_feature(feature):
     center = feature[0] + (feature[1] - feature[0])/2
@@ -164,16 +165,36 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     x = [v['compact_pos'] for v in variant_ls]
     y0s = [plot_params['y0'] - plot_params['exon_height'] / 2] * N
 
-    def get_y1(fn, ls):
-        ls_fn = [fn(x) for x in ls]
-        for x in ls_fn: 
-            if x < 0: # if log AF
-                min_y = min(ls_fn)
-                ls_fn = [c - min_y if c != 0 else 0 for c in ls_fn]
-                continue
-            # if x < 0: raise RuntimeError('Lollipop height cannot be negative')
-        y1_circle = [c * (plot_params['plot_height'] - plot_params['y0'] - variant_params['min_lollipop_height'] - variant_params['lollipop_radius'] - line_width - 2) / max(ls_fn) + plot_params['y0'] + variant_params['min_lollipop_height'] for c in ls_fn]
+    def get_y1(ls, yaxis, yaxis_scale):
+
+        if yaxis == 'AC' and yaxis_scale == 'linear':
+            def round_up_to_half(n): #round float up to 0.5
+                return math.ceil(n * 2)/2
+
+            y_max_order = math.floor(math.log10(max(ls)))
+
+            min_y_axis = 0
+            max_y_axis = round_up_to_half(max(ls)*10**(-y_max_order)) * 10**y_max_order
+
+        elif yaxis == 'AF' and yaxis_scale == 'linear':
+            min_y_axis = 0
+            max_y_axis = 1.0
+
+        elif yaxis_scale == 'log':
+            ls = [np.log10(y) if y > 0 else 0 for y in ls]
+            min_y_axis = math.floor(min(ls))
+            max_y_axis = math.ceil(max(ls))
+
+            if yaxis == 'AF': # if log AF, convert negative values to positive coordinates
+                ls = [y - min_y_axis if y != 0 else 0 for y in ls]
+
+        else: # if lollipop heights are not meaningful
+            min_y_axis = 0
+            max_y_axis = 1
+
+        y1_circle = [y * (plot_params['plot_height'] - plot_params['y0'] - variant_params['min_lollipop_height'] - variant_params['lollipop_radius'] - line_width - 2) / (max_y_axis - min_y_axis) + plot_params['y0'] + variant_params['min_lollipop_height'] for y in ls]
         y1_segment = [y - variant_params['lollipop_radius'] for y in y1_circle]
+
         return y1_circle, y1_segment
 
     r = [variant_params['lollipop_radius']] * N
@@ -189,18 +210,18 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
         allele_frequencies = [v['allele_frequency'] for v in variant_ls]
 
         #set original lollipop ys based on default_y_axis (allele count or allele freq) and default_y_axis_scale (log or linear)
-        if variant_params ['default_y_axis'] == 'AC': ys = allele_counts
+        if variant_params['default_y_axis'] == 'AC': ys = allele_counts
         elif variant_params['default_y_axis'] == 'AF': ys = allele_frequencies
 
         if variant_params['default_y_axis_scale'] == 'linear': fn = lambda x: x
         elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AC': fn = lambda x: np.log10(x) if x > 0 else 0
-        # elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AF': fn = lambda x: -np.log10(x) if x > 0 else 0
         elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AF': fn = lambda x: np.log10(x) if x > 0 else 0
         
-        y1_circle,y1_segment = get_y1(fn, ys)
+        y1_circle,y1_segment = get_y1(ys, variant_params['default_y_axis'], variant_params['default_y_axis_scale'])
+
     else:
         #if lollipop heights don't hold meaning, set them to 1/2 max height
-        y1_circle,y1_segment = get_y1(lambda x: x, [1 for v in variant_ls])
+        y1_circle,y1_segment = get_y1([1 for v in variant_ls], '', '')
         y1_circle = [y1/2 for y1 in y1_circle] 
         y1_segment = [y1/2 - line_width for y1 in y1_segment]
 
@@ -224,11 +245,11 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
         for vep_field in variant_params['vep']['vep_fields']: cds_dict[vep_field] = [v[transcript_ID + '_' + vep_field] for v in variant_ls]
 
     if variant_params['add_variant_axis']:
-        y1_ci_li_ct, y1_sg_li_ct = get_y1(lambda x: x, allele_counts)
-        y1_ci_lg_ct, y1_sg_lg_ct = get_y1(lambda x: np.log10(x) if x > 0 else 0, allele_counts)
-        y1_ci_li_fr, y1_sg_li_fr = get_y1(lambda x: x, allele_frequencies)
-        # y1_ci_lg_fr, y1_sg_lg_fr = get_y1(lambda x: -np.log10(x) if x > 0 else 0, allele_frequencies)
-        y1_ci_lg_fr, y1_sg_lg_fr = get_y1(lambda x: np.log10(x) if x > 0 else 0, allele_frequencies)
+
+        y1_ci_li_ct, y1_sg_li_ct = get_y1(allele_counts, 'AC', 'linear')
+        y1_ci_lg_ct, y1_sg_lg_ct = get_y1(allele_counts, 'AC', 'log')
+        y1_ci_li_fr, y1_sg_li_fr = get_y1(allele_frequencies, 'AF', 'linear')
+        y1_ci_lg_fr, y1_sg_lg_fr = get_y1(allele_frequencies, 'AF', 'log')
 
         variant_axis_dict = dict(
             y1_ci_li_ct=y1_ci_li_ct, y1_sg_li_ct=y1_sg_li_ct,
@@ -249,7 +270,6 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     circle_glyph.hover_glyph = Circle(x='x', y='y1_circle', radius='r', radius_units='screen', fill_color='white',
                                       fill_alpha=0, line_color='hover_colors', line_width=line_width + 0.5, line_alpha='line_alpha')
     circle_glyph.nonselection_glyph = None
-    # return segment_glyph, circle_glyph, allele_counts, allele_frequencies
     return segment_glyph, circle_glyph
 
 def add_track_glyph(user_track_params, track_name, plot, tracks, height, y_pos):
