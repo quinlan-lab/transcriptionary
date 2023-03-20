@@ -183,8 +183,11 @@ def add_user_tracks_checkbox(plot_ls,axes,user_track_glyphs,direction_glyphs,plo
         function setAxesStart(start){
             for (let i = 0; i < axis_names.length; i++){
                 for (let j = 0; j < plot_ls.length; j++){
-                    plot_ls[j].y_range.start = start
-                    plot_ls[j].extra_y_ranges[axis_names[i]].start = start
+                    try {
+                        plot_ls[j].y_range.start = start
+                        plot_ls[j].extra_y_ranges[axis_names[i]].start = start
+                    }
+                    catch (err) {}
                 }
             }
         }
@@ -196,13 +199,11 @@ def add_user_tracks_checkbox(plot_ls,axes,user_track_glyphs,direction_glyphs,plo
         }
         
         function setY(track_name,y){
-            console.log(y)
             for (let i = 0; i < user_track_glyphs[track_name].length; i++){
                 for (let j = 0; j < get_source(user_track_glyphs[track_name][i]).data['y'].length; j++){
                     if (i%2==0) {get_source(user_track_glyphs[track_name][i]).data['y'][j] = y}
                     else {get_source(user_track_glyphs[track_name][i]).data['y'][j] = y-track_h}    
                 }
-                console.log(user_track_glyphs[track_name][i])
                 get_source(user_track_glyphs[track_name][i]).change.emit()
             }
         }
@@ -281,7 +282,6 @@ def add_smoothing_slider(glyph_ls, fill_area_ls, title=''):
     slider = Slider(start=1, end=100, value=1, step=1, title=title, width=250)
     slider.js_on_change("value", CustomJS(args=dict(glyph_ls=glyph_ls, fill_area_ls=fill_area_ls),code="""
         function smooth(y,k,fill_area) {
-            //console.log(fill_area)
             var smoothed_ls = [ ... y]
             if (smoothed_ls.length <= 2) {return smoothed_ls}
             if (fill_area) {smoothed_ls = smoothed_ls.slice(1,smoothed_ls.length-1)}
@@ -299,9 +299,7 @@ def add_smoothing_slider(glyph_ls, fill_area_ls, title=''):
         
         function mean(y) { return y.reduce((i, j) => i + j) / y.length }
         
-        console.log(glyph_ls)
         for (let i = 0; i < glyph_ls.length; i++){
-            //console.log(fill_area_ls[i])
             for (let j = 0; j < glyph_ls[i].data_source.data['y'].length; j++){
                 glyph_ls[i].data_source.data['y'][j] = smooth(glyph_ls[i].data_source.data['y_unsmoothed'][j], cb_obj.value, fill_area_ls[i])
             }
