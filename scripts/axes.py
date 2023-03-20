@@ -2,7 +2,6 @@ from bokeh.models import LinearAxis,Range1d
 import math
 
 def add_axis(plot, plot_params, axis_label, y_max, min_tick, max_tick, tick_precision, tick_scientific_notation, y_min=0, num_ticks=3, axis_position='right', visible=True):
-
     ticks = [(max_tick-min_tick)/(num_ticks+1)*i+min_tick for i in range(num_ticks+2)]
     ticks = list(map(lambda x: int(x) if int(x)==x else x , ticks)) #have to do this for overrides to work on ticks ending in .0
     ticker_dict = {tick:str((y_max-y_min)/(num_ticks+1)*(idx)+y_min) for idx,tick in enumerate(ticks)}
@@ -38,7 +37,16 @@ def add_variant_axis(plot_params, variant_params, plot, axis_label, allele_vals,
     elif axis_label in ['Log(Allele count)', 'Log(Allele frequency)']:
         y_min = math.floor(min(allele_vals))
         y_max = math.ceil(max(allele_vals))
-        num_ticks = y_max - y_min - 1
+        if y_min != y_max:
+            num_ticks = y_max - y_min - 1
+        elif y_min == y_max == 0:
+            y_min = 0
+            y_max = 1
+            num_ticks = 0
+        else:
+            y_min = min([0,2*y_max])
+            y_max = max([0,2*y_max])
+            num_ticks = 1
 
     min_tick = plot_params['y0']+variant_params['min_lollipop_height']
     max_tick = plot_params['plot_height']-variant_params['lollipop_radius']-variant_params['lollipop_line_width']

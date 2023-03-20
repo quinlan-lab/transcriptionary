@@ -59,7 +59,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
             variant_axes['count_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele count', allele_counts, visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'linear')))
             variant_axes['count_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele count)', [log10(c) for c in allele_counts], visible=(variant_params['default_y_axis'] == 'AC' and variant_params['default_y_axis_scale'] == 'log')))
             variant_axes['frequency_linear'].append(add_variant_axis(plot_params, variant_params, plot, 'Allele frequency', allele_frequencies, visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'linear')))
-            variant_axes['frequency_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele frequency)', [log10(f) for f in allele_frequencies if f != 0], visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'log'))) #don't include 0s since they will just be plotted as min
+            variant_axes['frequency_log'].append(add_variant_axis(plot_params, variant_params, plot, 'Log(Allele frequency)', [log10(f) for f in allele_frequencies], visible=(variant_params['default_y_axis'] == 'AF' and variant_params['default_y_axis_scale'] == 'log'))) #don't include 0s since they will just be plotted as min
 
     else: variant_params['add_variant_axis'] = False
 

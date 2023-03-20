@@ -185,6 +185,14 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
             min_y_axis = math.floor(min(ls))
             max_y_axis = math.ceil(max(ls))
 
+            if min_y_axis == max_y_axis:
+                if min_y_axis == max_y_axis == 0:
+                    min_y_axis = 0
+                    max_y_axis = 1
+                else:
+                    min_y_axis = 0
+                    max_y_axis = 2*max_y_axis
+
             if yaxis == 'AF': # if log AF, convert negative values to positive coordinates
                 ls = [y - min_y_axis if y != 0 else 0 for y in ls]
 
