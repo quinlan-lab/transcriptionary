@@ -4,7 +4,7 @@ from process_gene_gff import gff_to_db
 
 def get_variants(variant_params, transcripts, start, end):
     filepath = variant_params['filepath']
-    seqid = variant_params['seqid']
+    seqid = variant_params['chrom']
 
     transcript_IDs = [transcripts[key]['ID'].split(':')[-1] for key in transcripts]
 
@@ -63,7 +63,7 @@ def get_variants(variant_params, transcripts, start, end):
 
         df = pd.read_csv(bed_path, names=variant_params['header'], sep='\t') 
         for idx,row in df.iterrows():
-            if row.iloc[0] != variant_params['seqid']: continue
+            if row.iloc[0] != variant_params['chrom']: continue
             di_variant = dict(pos=row.iloc[1], compact_start=-1)
             for transcript_ID in transcript_IDs: di_variant[transcript_ID + '_severity'] = 'NONE'
             variant_ls.append(di_variant)
@@ -85,7 +85,7 @@ def get_line(user_line_params,axis_name,line_name):
 
     filepath = user_line_params[axis_name]['lines'][line_name]['filepath']
     form = user_line_params[axis_name]['lines'][line_name]['format'].lower().strip('.')
-    seqid = user_line_params[axis_name]['lines'][line_name]['seqid'].lower().strip('.')
+    seqid = user_line_params[axis_name]['lines'][line_name]['chrom'].lower().strip('.')
 
     fi = open(filepath,'r')
 
@@ -114,7 +114,7 @@ def get_track(user_track_params, track_name):
 
     if form in ['gtf', 'gff']:
         db = gff_to_db(user_track_params[track_name]['filepath'], user_track_params[track_name]['filepath'] + '.db')
-        seqid = user_track_params[track_name]['seqid']
+        seqid = user_track_params[track_name]['chrom']
         for s in list(db.region(seqid=seqid, featuretype='exon')):
             box_dict = dict(ID=s[user_track_params[track_name]['color_by']][0], start=s.start, end=s.end, compact_start=-1, compact_end=-1, strand=s.strand)
             for field in user_track_params[track_name]['annotate_with']:
@@ -126,7 +126,7 @@ def get_track(user_track_params, track_name):
     elif form == 'bed': # does not support headers
         df = pd.read_csv(user_track_params[track_name]['filepath'], names=user_track_params[track_name]['header'], sep='\t')
         for idx,row in df.iterrows():
-            if row.iloc[0] != user_track_params[track_name]['seqid']: continue
+            if row.iloc[0] != user_track_params[track_name]['chrom']: continue
             box_dict = dict(ID=row[user_track_params[track_name]['color_by']], start=row.iloc[1], end=row.iloc[2], compact_start=-1, compact_end=-1)
             for field in user_track_params[track_name]['annotate_with']:
                 box_dict[field] = row[field]

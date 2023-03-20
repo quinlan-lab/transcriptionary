@@ -7,12 +7,12 @@ gff_path: 'test/data/test.gff3'  #if not database file, database will be created
 
 ####Plot params
 gene_name: 'KCNQ2'
-seqid: chr20
+chrom: chr20
 
 plot_height: 200
 plot_width: 1500
 track_height: 10
-exon_height: 16 #must be even
+exon_height: 16
 intron_size: 20
 
 plot_UTRs: True
@@ -34,7 +34,7 @@ plot_variants: True
 #VCF example
 variant_format: 'vcf'
 filepath: 'test/data/gnomad.exomes.chr20.subset.vcf.gz'
-seqid: chr20
+chrom: chr20
 info_annotations: #INFO fields to add to hover boxes (VCF only)
     - pab_max
     - popmax
@@ -49,7 +49,7 @@ vep: #VCF only; leave empty if not VEP annotated
 # variant_format: 'bed' #can be VCF or BED
 # filepath: 'test/data/gnomad_v3.1.1_KCNQ2_SNVs.bed'
 # header: ['Chromosome', 'Start', 'End', 'Reference', 'Alternate', 'Allele Count', 'Allele Number', 'Allele Frequency', 'VEP Annotation'] # BED only
-# seqid: chr20
+# chrom: chr20
 
 default_y_axis: 'AC' # can be toggled with HTML output
 default_y_axis_scale: 'log' # can be toggled with HTML output
@@ -69,8 +69,8 @@ variant_severity_colors:
 
 pfam_domains:
     format: 'gtf' #can be GTF or BED
-    filepath: 'test/data/chr20.pfam.sorted.gtf.db' #must be .bed, .gff, .gtf, .gff.db, or .gtf.db; if not gff/gtf database, database will be created for you
-    seqid: chr20
+    filepath: 'test/data/chr20.pfam.sorted.gtf' #must be .bed, .gff, .gtf, .gff.db, or .gtf.db; if not gff/gtf database, database will be created for you
+    chrom: chr20
     color_by: 'gene_id' #gtf field to color tracks by
     annotate_with: #fields to annotate in hover box
         - 'transcript_id'
@@ -80,18 +80,18 @@ pfam_domains:
 
 ucsc_repeats:
     format: 'gtf' #can be GTF or BED
-    seqid: chr20
+    chrom: chr20
     color_by: 'gene_id' #gtf field to color tracks by
     annotate_with: #fields to annotate in hover box
         - 'transcript_id'
-    filepath: 'test/data/ucsc_repeats_grch38.gtf.db' #must be .bed, .gff, .gtf, .gff.db, or .gtf.db; if not gff/gtf database, database will be created for you
+    filepath: 'test/data/ucsc_repeats_grch38.gtf' #must be .bed, .gff, .gtf, .gff.db, or .gtf.db; if not gff/gtf database, database will be created for you
     colors:
         trf: '#000000'
 
 ucsc_zebrafish_chain:
     format: 'bed' #can be GTF or BED
     filepath: 'test/data/ucsc_zebrafish_chain.bed' #must be .bed, .gff, .gtf, .gff.db, or .gtf.db; if not gff/gtf database, database will be created for you
-    seqid: chr20
+    chrom: chr20
     header: ['chrom', 'start', 'end', 'contig'] #list of field names in order (does not support BED fields with header)
     color_by: 'contig' #bed field to color tracks by
     annotate_with: #bed fields to annotate    
@@ -111,7 +111,7 @@ Coverage:
             #line params
             format: 'bedgraph' #can be BEDGRAPH, CSV, or TSV
             filepath: 'test/data/coverage.bedgraph'
-            seqid: '20'
+            chrom: '20'
             color: 'zomp'
             alpha: 0.5
             fill_area: True
@@ -126,14 +126,14 @@ Mutation counts:
         Expected mutation counts: 
             format: 'csv' #can be BEDGRAPH, CSV, or TSV
             filepath: 'test/data/expected_mut_counts.csv'
-            seqid: 'chr20'
+            chrom: 'chr20'
             color: '#f26419'
             alpha: 1
             fill_area: False
         Observed mutation counts:
             format: 'tsv' #can be BEDGRAPH, CSV, or TSV
             filepath: 'test/data/observed_mut_counts.tsv'
-            seqid: 'chr20'
+            chrom: 'chr20'
             color: '#19a7f2'
             alpha: 1
             fill_area: False

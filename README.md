@@ -40,7 +40,7 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 
 `gene_name`: gene name
 
-`seqid`: chromosome
+`chrom`: chromosome
 
 `plot_height`: height of plot in pixels; default 200
 `plot_width`: width of plot in pixels; default 1500

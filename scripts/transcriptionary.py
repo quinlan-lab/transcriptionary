@@ -107,7 +107,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
         all_xs = []
         all_ys = []
         for line in user_line_params[axis_name]['lines']:
-                xs_ls,ys_ls = project_coords.map_line(user_lines[axis_name][line], transcript_dict['exons'], user_line_params[axis_name]['lines'][line]['seqid'])
+                xs_ls,ys_ls = project_coords.map_line(user_lines[axis_name][line], transcript_dict['exons'], user_line_params[axis_name]['lines'][line]['chrom'])
                 all_xs.append(xs_ls)
                 all_ys.append(ys_ls)
         try: y_max = max([i for s in [i for s in all_ys for i in s] for i in s]) #flatten 3D list to 1D list to take max
