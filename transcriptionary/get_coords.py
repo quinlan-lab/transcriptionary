@@ -1,6 +1,6 @@
 import csv
 import pandas as pd
-from process_gene_gff import gff_to_db
+from .process_gene_gff import gff_to_db
 
 def get_variants(variant_params, transcripts, start, end):
     filepath = variant_params['filepath']
