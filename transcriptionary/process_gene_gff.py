@@ -1,5 +1,5 @@
 import gffutils
-import project_coords
+from . import project_coords
 
 def gff_to_db(gff_path,output_name):
     try:

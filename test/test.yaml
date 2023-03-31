@@ -1,6 +1,6 @@
 ---
 output_format: 'html' #can be HTML, PNG, or SVG
-output_filepath: '/uufs/chpc.utah.edu/common/home/u6038618/public_html/transcriptionary/plot.html'
+output_filepath: 'transcriptionary-example.html'
 transcripts: 'all' #['flattened-exons'] #can be: (1) "transcript_names": list all possible transcript names for the given configuration file (does not create a plot); (2) "[flattened-exons]": overlay all transcripts to create a transcript with the largest possible exons (used to view all possible exonic variants); (3) "all": plot all transcripts, including `flattened-exons`; (4) "[`<transcript_name_1>`, `<transcript_name_2>`, ...]": specify transcripts
 ###Data params
 gff_path: 'test/data/test.gff3'  #if not database file, database will be created for you
