@@ -1,6 +1,6 @@
 from bokeh.models import ColumnDataSource,CustomJS,CheckboxGroup,Legend,Slider,Div,RadioGroup
 from bokeh.plotting import figure
-from axes import format_ticks
+from .axes import format_ticks
 import numpy as np
 
 def add_linear_log_scale(variant_params, axes, glyph_dict):

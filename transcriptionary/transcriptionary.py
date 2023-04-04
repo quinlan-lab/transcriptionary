@@ -1,10 +1,10 @@
-from process_gene_gff import gff_to_db, get_gene_feature, get_transcript_dict
-from get_coords import get_variants,get_line,get_track
-from colors import color_boxes
-from axes import add_user_axis,add_variant_axis
-from glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph
-from widget_callbacks import add_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom
-import project_coords
+from .process_gene_gff import gff_to_db, get_gene_feature, get_transcript_dict
+from .get_coords import get_variants,get_line,get_track
+from .colors import color_boxes
+from .axes import add_user_axis,add_variant_axis
+from .glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph
+from .widget_callbacks import add_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom
+from . import project_coords
 import numpy as np
 import argparse
 from bokeh.plotting import figure#, output_file, save
@@ -287,4 +287,4 @@ def transcriptionary():
         for p in plot_ls: p.output_backend = 'svg'
         export_svg(column(legend + plot_ls), filename=output)
 
-transcriptionary()
+main = transcriptionary

@@ -1,6 +1,6 @@
 import numpy as np
 from bokeh.models import ColumnDataSource, Rect, Segment, Circle, MultiPolygons
-from colors import  color_variants,lighten_hex_color
+from .colors import  color_variants,lighten_hex_color
 import math
 
 def center_feature(feature):
