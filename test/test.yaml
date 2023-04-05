@@ -25,6 +25,8 @@ glyph_colors:
     UTR: '#969696'
     variant: 'charcoal' #default lollipop color if no severity information
 
+palettes_filepath: 'default_colors/palettes.yaml' #filepath to palettes config
+named_colors_filepath: 'default_colors/named_colors.yaml' #filepath to named colors config
 track_palette: 'bang_wong_palette' #palette to draw random track colors from; can be any one palette in palettes.yaml
 ...
 ---

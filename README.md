@@ -58,13 +58,15 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 - `UTR`: default '#969696'
 - `variant`: default lollipop color if no severity information is available; default 'charcoal'
 
+`palettes_filepath`: filepath to config file with color palettes; default `default_colors/palettes.yaml`
+`named_colors_filepath`: filepath to config file mapping hex color codes to named colors; default `default_colors/named_colors.yaml`
 `track_palette`: palette to draw random track colors from; can be any palette in default_colors/palettes.yaml
 
 `plot_variants`: show lollipops (boolean)
 `variant_format`: file format of variant file, can be VCF or BED
 `filepath`: path to VCF or BED (for variant coordinates)
 `header`: list of column names (BED only)
-`seqid`: chromosome
+`chrom`: chromosome
 `info_annotations`: INFO fields to add to hover boxes (VCF only)
 `vep`: VCF only; leave empty if not VEP annotated
 - `field_name`: name of INFO field with VEP string (e.g. vep, ann, csq)
@@ -82,8 +84,6 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 - MED:
 - HIGH:
 - NONE:
-
-`track_palette`: any palette in default_colors/palettes.yaml
 
 `<track_name>`: track label
 - `format`: file format of track file, can be GTF or BED
@@ -110,11 +110,13 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 
 ## Run Test
 ```
-python scripts/transcriptionary.py test/test.yaml
+transcriptionary.py test/test.yaml
 ```
 
+will create `transcriptionary-example.html`
+
 ## How to customize colors and color palettes
-Define or adjust named colors by modifying `default_colors/named_colors.yaml`. Create a custom color palette to pull random track colors from by adding to `default_colors/palettes.yaml` (use hex codes or use the named colors defined in `default_colors/named_colors.yaml`).
+Define or adjust named colors by modifying `default_colors/named_colors.yaml`. Create a custom color palette to pull random track colors from by adding to `default_colors/palettes.yaml` (use hex codes or use the named colors defined in `default_colors/named_colors.yaml`). Alternatively, create your own named_colors and palettes config files and change the file path in the main config file.
 
 ## Color palette citations
 Color-blind friendly color palettes are included in default_colors/palettes.yaml

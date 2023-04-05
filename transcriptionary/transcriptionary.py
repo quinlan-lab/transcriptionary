@@ -130,7 +130,6 @@ def parse_args():
 
     ### CONFIG ###
     config_file = args.config_file
-    # TODO what to do if config file doesn't have required params?
     if config_file[-5:] != '.yaml': raise RuntimeError('configuration file must be .yaml')
     with open(config_file) as f:
         params = list(yaml.load_all(f, Loader=SafeLoader))
@@ -145,7 +144,7 @@ def parse_args():
         plot_params['y0'] = plot_params['transcript_height'] + plot_params['exon_height'] / 2  # "0" for line plots
 
     ### COLORS ###
-    with open('default_colors/named_colors.yaml') as f:
+    with open(plot_params['named_colors_filepath']) as f:
         named_colors = list(yaml.load_all(f, Loader=SafeLoader))[0]
 
     ### GLYPH COLORS ###
@@ -162,7 +161,7 @@ def parse_args():
                 user_track_params[track]['colors'][domain] = get_color(user_track_params[track]['colors'][domain])
         except: continue
 
-    with open('default_colors/palettes.yaml') as f:
+    with open(plot_params['palettes_filepath']) as f:
         palettes = list(yaml.load_all(f, Loader=SafeLoader))[0]
     track_colors = [c if '#' in c else named_colors[c] for c in palettes[plot_params['track_palette']]]
     plot_params['track_colors'] = track_colors
