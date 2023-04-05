@@ -21,7 +21,7 @@ plot_direction: True
 glyph_colors:
     intron: 'gray 11'
     exon: 'davys gray'
-    arrow: '#252525'
+    arrow: '#e8e8e8'
     UTR: '#969696'
     variant: 'charcoal' #default lollipop color if no severity information
 

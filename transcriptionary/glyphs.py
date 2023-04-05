@@ -55,7 +55,7 @@ def add_exon_glyph(plot_params, plot, exons, direction):
 
     xs_dict = []
     for i in range(len(features_compact)):
-        xs_dict.append([{'exterior': adjust_arrow_coords(i, [-20, -20, 0, 0], direction), 'holes': []}]) #rectangle
+        xs_dict.append([{'exterior': adjust_arrow_coords(i, [-20, -20, 1, 1], direction), 'holes': []}]) #rectangle
         xs_dict.append([{'exterior': adjust_arrow_coords(i, [0, 0, 20], direction), 'holes': []}]) #triangle
 
     ys_dict = []
@@ -79,7 +79,7 @@ def add_exon_glyph(plot_params, plot, exons, direction):
     arrow_source = ColumnDataSource(dict(x=xs, y=ys, fill_alpha=[1 for i in features_compact] * 2,
                                          direction=[direction for i in features_compact] * 2))
     arrow_glyph = plot.multi_polygons(source=arrow_source, xs='x', ys='y', fill_color=color, line_color=color,
-                                      fill_alpha='fill_alpha', line_alpha=0)
+                                      fill_alpha='fill_alpha')
     arrow_glyph.level = 'overlay'
     arrow_glyph.nonselection_glyph = None
 
