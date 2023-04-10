@@ -3,15 +3,15 @@ from setuptools import setup, find_packages
 with open('requirements.txt') as f:
 	requirements = f.readlines()
 
-long_description = 'Create bokeh plots of variants and genes'
+long_description = 'Create interactive and customizable gene transcript visualizations'
 
 setup(
 		name ='transcriptionary',
 		version ='0.1.0',
 		author ='Suchita Lulla',
-		author_email ='suchi@gmail.com',
+		author_email ='suchitalulla@gmail.com',
 		url ='https://github.com/quinlan-lab/transcriptionary',
-		description ='gene plots',
+		description ='transcript plots',
 		long_description = long_description,
 		long_description_content_type ="text/markdown",
 		license ='MIT',
@@ -26,7 +26,7 @@ setup(
 			"License :: OSI Approved :: MIT License",
 			"Operating System :: OS Independent",
 		),
-		keywords ='genome variants genes',
+		keywords ='genome variants genes transcripts',
 		install_requires = requirements,
 		zip_safe = False
 )
