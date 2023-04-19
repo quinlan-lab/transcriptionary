@@ -109,6 +109,8 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 
 ## Install
 ```
+git clone https://github.com/quinlan-lab/transcriptionary.git
+cd transcriptionary
 conda config --add channels defaults
 conda config --add channels bioconda
 conda config --add channels conda-forge
@@ -121,16 +123,18 @@ python setup.py install
 or
 
 ```
+git clone https://github.com/quinlan-lab/transcriptionary.git
+cd transcriptionary
 pip install -r requirements.txt
 python setup.py install
 ```
 
 ## Run Test
 ```
-transcriptionary.py test/test.yaml
+transcriptionary test/test.yaml
 ```
 
-will create `transcriptionary-example.html`
+will create `transcriptionary-example.html`. Open `transcriptionary-example.html` in browser to view plots.
 
 ## How to customize colors and color palettes
 Define or adjust named colors by modifying `default_colors/named_colors.yaml`. Create a custom color palette to pull random track colors from by adding to `default_colors/palettes.yaml` (use hex codes or use the named colors defined in `default_colors/named_colors.yaml`). Alternatively, create your own named_colors and palettes config files and change the file path in the main config file.
