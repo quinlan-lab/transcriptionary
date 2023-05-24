@@ -3,7 +3,7 @@ from .get_coords import get_variants,get_line,get_track
 from .colors import color_boxes
 from .axes import add_user_axis,add_variant_axis
 from .glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph
-from .widget_callbacks import add_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom
+from .widget_callbacks import add_checkbox,add_variant_severity_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom
 from . import project_coords
 import numpy as np
 import argparse
@@ -265,8 +265,13 @@ def transcriptionary():
             else:
                 sliders.append(None)
         
-        if variant_params['plot_variants'] and variant_params['add_variant_axis']:
-            grid1 = [[checkbox, user_tracks_checkbox],[div_type, div_scale],[radio_group_type, radio_group_scale]] 
+        if variant_params['plot_variants'] and variant_params['add_variant_axis']: #if variant data, add log/linear and count/frequency radio buttons
+            if variant_params['vep']: #if variant severity information, add checkbox to turn severity types on and off
+                variant_severity_checkbox = add_variant_severity_checkbox(plot_ls, glyph_dict)
+                grid1 = [[checkbox, variant_severity_checkbox, user_tracks_checkbox],[div_type, div_scale],[radio_group_type, radio_group_scale]] 
+
+            else: grid1 = [[checkbox, user_tracks_checkbox],[div_type, div_scale],[radio_group_type, radio_group_scale]] 
+
         else: grid1 = [[checkbox, user_tracks_checkbox]]
         
         lines = list(zip(user_line_checkboxes,sliders))

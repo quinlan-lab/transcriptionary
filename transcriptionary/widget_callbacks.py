@@ -153,16 +153,83 @@ def add_checkbox(plot_ls, line_axes, glyph_dict, plot_params, variant_params):
     
     return checkbox 
 
+def add_variant_severity_checkbox(plot_ls, glyph_dict):
+    glyphs = [g for g in glyph_dict['Variant'] if g]  
+    severities = [g.data_source.data['sev'] for g in glyphs]
+    severities = [i for sub_ls in severities for i in sub_ls] #flatten
+
+    labels = list(np.unique(severities))
+    active = list(range(len(labels)))
+    checkbox = CheckboxGroup(labels=labels, active=active, width=100)
+
+    callback = CustomJS(args=dict(plot_ls=plot_ls, labels=labels, glyphs=glyphs, 
+                                    glyph_data_keys=list(glyphs[0].data_source.data.keys()), ori_data_sources = [g.data_source.data for g in glyphs],
+                                 ), code='''
+        // get list of severity strings to include
+        var severity_strings = [];
+        for (let i = 0; i < labels.length; i++){
+            if (cb_obj.active.includes(i)) {
+                severity_strings.push(labels[i])
+            }
+        }
+
+        for (let i = 0; i < glyphs.length; i++){
+
+            // get indices where glyph severity in active
+            var active_indices = [];
+            for (let j = 0; j < ori_data_sources[i]['sev'].length; j++){
+                if (severity_strings.includes(ori_data_sources[i]['sev'][j])){ active_indices.push(j) }
+            }
+
+            // set each list in data source to only the active indices
+            for (let k = 0; k < glyph_data_keys.length; k++){
+                glyphs[i].data_source.data[glyph_data_keys[k]] = active_indices.map(m => ori_data_sources[i][glyph_data_keys[k]][m])
+            }
+            glyphs[i].data_source.change.emit()
+        }
+
+    ''')
+
+    checkbox.js_on_change('active', callback)
+
+    return checkbox
+
 def add_user_tracks_checkbox(plot_ls,axes,user_track_glyphs,direction_glyphs,plot_params):
     labels = list(user_track_glyphs.keys())
     active = list(range(len(labels)))
+    direction_glyphs = [glyph for glyph in direction_glyphs if glyph]
+
+    # uncomment for demo
+    # active = []
+    # for p in plot_ls:
+    #     p.y_range.start = plot_params['transcript_height']-plot_params['exon_height']/2
+    #     for axis in p.extra_y_ranges.values():
+    #         axis.start = plot_params['transcript_height']-plot_params['exon_height']/2
+            
+    # for key in user_track_glyphs:
+    #     for idx in range(len(user_track_glyphs[key])):
+    #         user_track_glyphs[key][idx].visible = False
+    
+    # direction_glyphs = [glyph for glyph in direction_glyphs if glyph]
+    # for glyph in direction_glyphs:
+    #     for j in range(int(len(glyph.data_source.data['y'])/2)):
+    #         #triangle
+    #         glyph.data_source.data['y'][j*2+1][0][0][0] = plot_params['transcript_height'] - plot_params['exon_height']/2 + (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*1.5)
+    #         glyph.data_source.data['y'][j*2+1][0][0][1] = plot_params['transcript_height'] + plot_params['exon_height']/2 - (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*1.5)
+    #         #rectangle
+    #         glyph.data_source.data['y'][j*2][0][0][0] = plot_params['transcript_height'] - plot_params['exon_height']/5 + (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*4.5)
+    #         glyph.data_source.data['y'][j*2][0][0][1] = plot_params['transcript_height'] + plot_params['exon_height']/5 - (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*4.5)
+    #         glyph.data_source.data['y'][j*2][0][0][2] = plot_params['transcript_height'] + plot_params['exon_height']/5 - (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*4.5)
+    #         glyph.data_source.data['y'][j*2][0][0][3] = plot_params['transcript_height'] - plot_params['exon_height']/5 + (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*4.5)
+
+    ###
+
     user_tracks_checkbox = CheckboxGroup(labels=labels,active=active, width=100)
     axis_names = [ls[0].axis_label for ls in list(axes.values()) if len(ls)>0]
     user_track_names = list(user_track_glyphs.keys())
     
     ori_y_coords = [user_track_glyphs[track_name][0].data_source.data['y'][0] for track_name in user_track_glyphs]
         
-    direction_glyphs = [glyph for glyph in direction_glyphs if glyph]
     s0_arrow = [glyph_ls.data_source for glyph_ls in direction_glyphs]
     callback = CustomJS(args=dict(plot_ls=plot_ls, plot_params=plot_params, axis_names=axis_names,axes=axes,
                                   user_track_glyphs=user_track_glyphs, user_track_names=user_track_names,

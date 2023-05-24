@@ -5,7 +5,7 @@ transcriptionary takes user-defined parameters to create a static .html document
 Exons are annotated with coordinates and length.
 
 Variants are specified as VCF or BED and are annotated with interactive hover boxes. For VCF, lollipops are annotated with allele count, allele frequency, mutation type, VEP annotations, and are colored by severity. Radio buttons in the plot give the option to view lollipop heights as allele count or allele frequency, and linear or log scale. 
-If a VCF with VEP annotations is provided, lollipops will be categorized as LOW, MED, or HIGH impact as per [geneimpacts](https://github.com/brentp/geneimpacts) and colored accordingly.
+If a VCF with VEP annotations is provided, lollipops will be categorized as LOW, MED, or HIGH impact as per [geneimpacts](https://github.com/brentp/geneimpacts) and colored accordingly. If no VEP annotation is present for a given transcript, lollipops on that transcript will be annotated as NONE. For a VCF with VEP annotations, lollipops can be turned on and off by severity with a checkbox.
 
 Tracks are specified as GTF or BED and are annotated with name, coordinates, and length, along with other specified fields from GTF. Colors can be specified by the user or chosen randomly from a color palette.
 
