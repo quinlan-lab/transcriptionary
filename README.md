@@ -72,6 +72,7 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 - `field_name`: name of INFO field with VEP string (e.g. vep, ann, csq)
 - `vep_fields`: vep fields to add to hover annotations
     - `<vep_field>`
+- `annotate_severity_by`: possible arguments are `transcript_severity` (use VEP annotations from given transcript) and `max_severity` (use VEP annotation from most severe transcript specified in `transcripts` argument); these apply to `vep_fields` also
 
 `default_y_axis`: set lollipop heights according to allele count (`AC`) or allele frequency (`AF`) by default (can be toggled with HTML output)
 `default_y_axis_scale`: scale lollipop heights according on a linear (`linear`) or log (`log`) scale by default (can be toggled with HTML output)

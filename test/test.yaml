@@ -46,6 +46,7 @@ vep: #VCF only; leave empty if not VEP annotated
     - SYMBOL
     - Amino_acids
     - Consequence
+    annotate_severity_by: max_severity #possible arguments are transcript_severity (use VEP annotations from given transcript) and max_severity (use VEP annotation from most severe transcript specified in 'transcripts' argument); these apply to vep_fields also
 
 #BED example
 # variant_format: 'bed' #can be VCF or BED

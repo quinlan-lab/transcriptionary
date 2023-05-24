@@ -32,24 +32,35 @@ def get_variants(variant_params, transcripts, start, end):
                 vep = v.INFO[variant_params['vep']['field_name']]
                 impact_strings = vep.split(",")
 
+                if variant_params['vep']['annotate_severity_by'] == 'max_severity': #if max_severity, get annotation with highest severity
+                        impacts = [VEP(impact_string, keys=vep_keys) for impact_string in impact_strings]
+                        top = Effect.top_severity(impacts)
+
+                        try: max_sev_ann = top[0]
+                        except: max_sev_ann = top
+
+                #add user defined VEP fields
                 for vep_field in variant_params['vep']['vep_fields']:
                     for transcript_ID in transcript_IDs:
-                        transcript_impact_string = [s for s in impact_strings if transcript_ID in s]
-                        if len(transcript_impact_string) > 1: print('Warning: more than one VEP impact string with transcript ID {}; using first impact string'.format(transcript_ID))
-                        if len(transcript_impact_string) == 0: 
+                        if variant_params['vep']['annotate_severity_by'] == 'max_severity': impact_string = impact_string = [s for s in impact_strings if max_sev_ann.transcript in s] #if max_severity, use annotation with highest severity
+                        elif variant_params['vep']['annotate_severity_by'] == 'transcript_severity': impact_string = [s for s in impact_strings if transcript_ID in s] #elif transcript_severity, use annotation for this transcript
+                        if len(impact_string) > 1: print('Warning: more than one VEP impact string with transcript ID {}; using first impact string'.format(transcript_ID))
+                        if len(impact_string) == 0: 
                             di_variant[transcript_ID + '_' + vep_field] = 'None'
                         else: 
-                            transcript_impact_string = transcript_impact_string[0]
-                            di_variant[transcript_ID + '_' + vep_field] = VEP(transcript_impact_string, keys=vep_keys).effects.get(vep_field, 'None')
-
+                            impact_string = impact_string[0]
+                            di_variant[transcript_ID + '_' + vep_field] = VEP(impact_string, keys=vep_keys).effects.get(vep_field, None)
+                
+                #add severity annotation from VEP
                 for transcript_ID in transcript_IDs:
-                    transcript_impact_string = [s for s in impact_strings if transcript_ID in s]
-                    if len(transcript_impact_string) > 1: print('Warning: more than one VEP impact string with transcript ID {}; using first impact string'.format(transcript_ID))
-                    if len(transcript_impact_string) == 0: 
+                    if variant_params['vep']['annotate_severity_by'] == 'max_severity': impact_string = impact_string = [s for s in impact_strings if max_sev_ann.transcript in s] #if max_severity, use annotation with highest severity
+                    elif variant_params['vep']['annotate_severity_by'] == 'transcript_severity': impact_string = [s for s in impact_strings if transcript_ID in s] #elif transcript_severity, use annotation for this transcript
+                    if len(impact_string) > 1: print('Warning: more than one VEP impact string with transcript ID {}; using first impact string'.format(transcript_ID))
+                    if len(impact_string) == 0: 
                         di_variant[transcript_ID + '_severity'] = 'NONE'
                     else: 
-                        transcript_impact_string = transcript_impact_string[0]
-                        di_variant[transcript_ID + '_severity'] = VEP(transcript_impact_string, keys=vep_keys).impact_severity
+                        impact_string = impact_string[0]
+                        di_variant[transcript_ID + '_severity'] = VEP(impact_string, keys=vep_keys).impact_severity
 
             else:
                 for transcript_ID in transcript_IDs: di_variant[transcript_ID + '_severity'] = 'NONE'
