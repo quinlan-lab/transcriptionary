@@ -36,7 +36,7 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
             try:
                 UTR = list(gff_db.children(transcript, featuretype=f))
                 if len(UTR) > 1: 
-                    print('Warning: transcript {} has {} {} annotations; using first annotation.'.format(tname, len(UTR), featuretype))
+                    print('Warning: transcript {} has {} {} annotations; using first annotation.'.format(tname, len(UTR), f))
                 UTR_dict = {'featuretype': f, 'start': UTR[0].start, 'end': UTR[0].end}
                 UTRs.append(UTR_dict)
             except: continue 
