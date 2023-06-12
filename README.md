@@ -1,3 +1,4 @@
+![workflow badge](https://github.com/quinlan-lab/transcriptionary/actions/workflows/python-package.yml/badge.svg)
 # transcriptionary: customizable, interactive gene transcript plots
 
 transcriptionary takes user-defined parameters to create a static .html document displaying gene transcripts with introns compressed. 
