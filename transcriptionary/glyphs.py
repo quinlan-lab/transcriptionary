@@ -120,8 +120,11 @@ def add_intron_glyph(plot_params, plot, introns, fill_alpha=1, width=14):
 
 
 def add_UTR_glyph(plot_params, plot, UTRs, fill_alpha=0.4):
-    features_original = [(UTR['start'], UTR['end']) for UTR in UTRs]
-    features_compact = [(UTR['compact_start'], UTR['compact_end']) for UTR in UTRs]
+
+    def flatten(ls): return [i for s in ls for i in s]
+    
+    features_original = flatten([[(UTR['start'], UTR['end'])]*len(UTR['compact_start']) for UTR in UTRs]) #duplicate original coordinates for each exon spanned by box
+    features_compact = flatten([zip(UTR['compact_start'], UTR['compact_end']) for UTR in UTRs])
     feat_type = [UTR['featuretype'] for UTR in UTRs]
     x = [center_feature(f) for f in features_compact]
     y = [plot_params['transcript_height'] for f in features_compact]
@@ -151,6 +154,7 @@ def add_UTR_glyph(plot_params, plot, UTRs, fill_alpha=0.4):
     return plot.add_glyph(source, glyph, hover_glyph=hover_glyph)
 
 def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls, line_width=2):
+    
     variant_ls = [v for v in variant_ls if v['compact_pos'] >= 0]
     N = len(variant_ls)
     if N == 0: 
@@ -281,14 +285,17 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
     return segment_glyph, circle_glyph
 
 def add_track_glyph(user_track_params, track_name, plot, tracks, height, y_pos):
-    tracks = [di for di in tracks if di['compact_start']>=0]
+    
+    def flatten(ls): return [i for s in ls for i in s]
+
+    tracks = [di for di in tracks if len(di['compact_start'])>0]
     if not tracks: 
-        tracks = [{'ID': 'empty track', 'start': 0, 'end': 0, 'compact_start': 0, 'compact_end': 0, 'color': '#111111', 'strand': ''}]
+        tracks = [{'ID': 'empty track', 'start': 0, 'end': 0, 'compact_start': [0], 'compact_end': [0], 'color': '#111111', 'strand': ''}]
         for field in user_track_params[track_name]['annotate_with']: tracks[0][field] = ''
     tracks = sorted(tracks, key=lambda di: di['end']-di['start'], reverse=True) #make sure smaller tracks are in front of larger tracks
-    tracks_compact = [(di['compact_start'], di['compact_end']) for di in tracks]
-    color_by = [di['ID'] for di in tracks]
-    colors = [di['color'] for di in tracks]
+    tracks_compact = flatten([zip(di['compact_start'], di['compact_end']) for di in tracks])
+    color_by = flatten([[di['ID']]*len(di['compact_start']) for di in tracks]) #duplicate color_by for each exon spanned by box
+    colors = flatten([[di['color']]*len(di['compact_start']) for di in tracks]) #duplicate color for each exon spanned by box
 
     x = [center_feature(f) for f in tracks_compact]
     y = [y_pos for f in tracks_compact]
@@ -298,8 +305,11 @@ def add_track_glyph(user_track_params, track_name, plot, tracks, height, y_pos):
 
     ### METADATA ###
     cds_dict = dict(x=x, y=y, w=w, h=h, colors=colors, hover_colors=hover_colors, color_by=color_by,
-        adj_start=[di['compact_start'] for di in tracks], adj_end=[di['compact_end'] for di in tracks],
-        true_start=[di['start'] for di in tracks], true_end=[di['end'] for di in tracks], true_len=[di['end'] - di['start'] + 1 for di in tracks])
+        adj_start=[coord[0] for coord in tracks_compact], 
+        adj_end=[coord[1] for coord in tracks_compact],
+        true_start=flatten([[di['start']]*len(di['compact_start']) for di in tracks]), #duplicate original coordinates for each exon spanned by box
+        true_end=flatten([[di['end']]*len(di['compact_start']) for di in tracks]), 
+        true_len=flatten([[di['end'] - di['start'] + 1]*len(di['compact_start']) for di in tracks]))
 
     for field in user_track_params[track_name]['annotate_with']: cds_dict[field] = [di[field] for di in tracks]
 

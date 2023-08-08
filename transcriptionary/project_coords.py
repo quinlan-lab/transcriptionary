@@ -120,6 +120,7 @@ def flatten_exons(exons):
     >>> e2 = [{'start': 50, 'end': 100}, {'start': 75, 'end': 150}, {'start': 0, 'end': 80}, {'start': 120, 'end': 130}]
     >>> flatten_exons(e2)
     [{'start': 0, 'end': 150}]
+
     UNIT TEST 3 - start with overlaps
     >>> e3 = [{'start': 10, 'end': 50}, {'start': 40, 'end': 70}, {'start': 60, 'end': 80}, {'start': 100, 'end': 150}, {'start': 160, 'end': 200}, {'start': 300, 'end': 350}]
     >>> flatten_exons(e3)
@@ -170,6 +171,7 @@ def flatten_exons(exons):
 
 
 def map_box(box_coords, exons):
+
     '''
     UNIT TEST 1 - one box inside each exon
     >>> ec1 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -177,9 +179,9 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec1)
     >>> map_box(bc1, ec1)
     >>> for coord in bc1: print(coord)
-    {'start': 150, 'end': 175, 'compact_start': 60, 'compact_end': 85}
-    {'start': 300, 'end': 375, 'compact_start': 170, 'compact_end': 245}
-    {'start': 800, 'end': 825, 'compact_start': 380, 'compact_end': 405}
+    {'start': 150, 'end': 175, 'compact_start': [60], 'compact_end': [85]}
+    {'start': 300, 'end': 375, 'compact_start': [170], 'compact_end': [245]}
+    {'start': 800, 'end': 825, 'compact_start': [380], 'compact_end': [405]}
     
     UNIT TEST 2 - >= 1 box inside each exon 
     >>> ec2 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -187,13 +189,13 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec2)
     >>> map_box(bc2, ec2)
     >>> for coord in bc2: print(coord)
-    {'start': 150, 'end': 160, 'compact_start': 60, 'compact_end': 70}
-    {'start': 170, 'end': 190, 'compact_start': 80, 'compact_end': 100}
-    {'start': 270, 'end': 290, 'compact_start': 140, 'compact_end': 160}
-    {'start': 300, 'end': 350, 'compact_start': 170, 'compact_end': 220}
-    {'start': 360, 'end': 375, 'compact_start': 230, 'compact_end': 245}
-    {'start': 800, 'end': 825, 'compact_start': 380, 'compact_end': 405}
-    {'start': 830, 'end': 880, 'compact_start': 410, 'compact_end': 460}
+    {'start': 150, 'end': 160, 'compact_start': [60], 'compact_end': [70]}
+    {'start': 170, 'end': 190, 'compact_start': [80], 'compact_end': [100]}
+    {'start': 270, 'end': 290, 'compact_start': [140], 'compact_end': [160]}
+    {'start': 300, 'end': 350, 'compact_start': [170], 'compact_end': [220]}
+    {'start': 360, 'end': 375, 'compact_start': [230], 'compact_end': [245]}
+    {'start': 800, 'end': 825, 'compact_start': [380], 'compact_end': [405]}
+    {'start': 830, 'end': 880, 'compact_start': [410], 'compact_end': [460]}
         
     UNIT TEST 3 - 2 exons without a box
     >>> ec3 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -201,8 +203,8 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec3)
     >>> map_box(bc3, ec3)
     >>> for coord in bc3: print(coord)
-    {'start': 260, 'end': 300, 'compact_start': 130, 'compact_end': 170}
-    {'start': 330, 'end': 370, 'compact_start': 200, 'compact_end': 240}
+    {'start': 260, 'end': 300, 'compact_start': [130], 'compact_end': [170]}
+    {'start': 330, 'end': 370, 'compact_start': [200], 'compact_end': [240]}
     
     
     UNIT TEST 4 - boxes partially in exons
@@ -211,11 +213,11 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec4)
     >>> map_box(bc4, ec4)
     >>> for coord in bc4: print(coord)
-    {'start': 180, 'end': 210, 'compact_start': 90, 'compact_end': 110}
-    {'start': 230, 'end': 300, 'compact_start': 120, 'compact_end': 170}
-    {'start': 320, 'end': 420, 'compact_start': 190, 'compact_end': 270}
-    {'start': 660, 'end': 800, 'compact_start': 280, 'compact_end': 380}
-    {'start': 820, 'end': 850, 'compact_start': 400, 'compact_end': 430}
+    {'start': 180, 'end': 210, 'compact_start': [90], 'compact_end': [110]}
+    {'start': 230, 'end': 300, 'compact_start': [120], 'compact_end': [170]}
+    {'start': 320, 'end': 420, 'compact_start': [190], 'compact_end': [270]}
+    {'start': 660, 'end': 800, 'compact_start': [280], 'compact_end': [380]}
+    {'start': 820, 'end': 850, 'compact_start': [400], 'compact_end': [430]}
     
     UNIT TEST 5 - boxes on exon boundaries
     >>> ec5 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -223,10 +225,10 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec5)
     >>> map_box(bc5, ec5)
     >>> for coord in bc5: print(coord)
-    {'start': 100, 'end': 200, 'compact_start': 10, 'compact_end': 110}
-    {'start': 250, 'end': 300, 'compact_start': 120, 'compact_end': 170}
-    {'start': 700, 'end': 725, 'compact_start': 280, 'compact_end': 305}
-    {'start': 750, 'end': 900, 'compact_start': 330, 'compact_end': 480}
+    {'start': 100, 'end': 200, 'compact_start': [10], 'compact_end': [110]}
+    {'start': 250, 'end': 300, 'compact_start': [120], 'compact_end': [170]}
+    {'start': 700, 'end': 725, 'compact_start': [280], 'compact_end': [305]}
+    {'start': 750, 'end': 900, 'compact_start': [330], 'compact_end': [480]}
     
     UNIT TEST 6 - boxes in introns
     >>> ec6 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -234,10 +236,10 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec6)
     >>> map_box(bc6, ec6)
     >>> for coord in bc6: print(coord)
-    {'start': 0, 'end': 90, 'compact_start': -1, 'compact_end': -1}
-    {'start': 210, 'end': 220, 'compact_start': -1, 'compact_end': -1}
-    {'start': 230, 'end': 240, 'compact_start': -1, 'compact_end': -1}
-    {'start': 1000, 'end': 1100, 'compact_start': -1, 'compact_end': -1}
+    {'start': 0, 'end': 90, 'compact_start': [], 'compact_end': []}
+    {'start': 210, 'end': 220, 'compact_start': [], 'compact_end': []}
+    {'start': 230, 'end': 240, 'compact_start': [], 'compact_end': []}
+    {'start': 1000, 'end': 1100, 'compact_start': [], 'compact_end': []}
     
     UNIT TEST 7 - boxes in introns, starting at last base of previous exon and/or ending at last base of next exon
     >>> ec7 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -245,12 +247,12 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec7)
     >>> map_box(bc7, ec7)
     >>> for coord in bc7: print(coord)
-    {'start': 50, 'end': 100, 'compact_start': -1, 'compact_end': -1}
-    {'start': 200, 'end': 210, 'compact_start': -1, 'compact_end': -1}
-    {'start': 220, 'end': 250, 'compact_start': -1, 'compact_end': -1}
-    {'start': 400, 'end': 500, 'compact_start': -1, 'compact_end': -1}
-    {'start': 400, 'end': 700, 'compact_start': -1, 'compact_end': -1}
-    {'start': 900, 'end': 950, 'compact_start': -1, 'compact_end': -1}
+    {'start': 50, 'end': 100, 'compact_start': [], 'compact_end': []}
+    {'start': 200, 'end': 210, 'compact_start': [], 'compact_end': []}
+    {'start': 220, 'end': 250, 'compact_start': [], 'compact_end': []}
+    {'start': 400, 'end': 500, 'compact_start': [], 'compact_end': []}
+    {'start': 400, 'end': 700, 'compact_start': [], 'compact_end': []}
+    {'start': 900, 'end': 950, 'compact_start': [], 'compact_end': []}
     
     UNIT TEST 8 - start and end coordinates reversed
     >>> ec8 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -258,10 +260,10 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec8)
     >>> map_box(bc8, ec8)
     >>> for coord in bc8: print(coord)
-    {'start': 180, 'end': 210, 'compact_start': 90, 'compact_end': 110}
-    {'start': 320, 'end': 420, 'compact_start': 190, 'compact_end': 270}
-    {'start': 660, 'end': 800, 'compact_start': 280, 'compact_end': 380}
-    {'start': 820, 'end': 850, 'compact_start': 400, 'compact_end': 430}
+    {'start': 180, 'end': 210, 'compact_start': [90], 'compact_end': [110]}
+    {'start': 320, 'end': 420, 'compact_start': [190], 'compact_end': [270]}
+    {'start': 660, 'end': 800, 'compact_start': [280], 'compact_end': [380]}
+    {'start': 820, 'end': 850, 'compact_start': [400], 'compact_end': [430]}
     
     UNIT TEST 9 - overlapping boxes
     >>> ec9 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -269,13 +271,13 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec9)
     >>> map_box(bc9, ec9)
     >>> for coord in bc9: print(coord)
-    {'start': 125, 'end': 175, 'compact_start': 35, 'compact_end': 85}
-    {'start': 140, 'end': 190, 'compact_start': 50, 'compact_end': 100}
-    {'start': 200, 'end': 300, 'compact_start': 120, 'compact_end': 170}
-    {'start': 270, 'end': 370, 'compact_start': 140, 'compact_end': 240}
-    {'start': 700, 'end': 850, 'compact_start': 280, 'compact_end': 430}
-    {'start': 820, 'end': 870, 'compact_start': 400, 'compact_end': 450}
-    {'start': 800, 'end': 900, 'compact_start': 380, 'compact_end': 480}
+    {'start': 125, 'end': 175, 'compact_start': [35], 'compact_end': [85]}
+    {'start': 140, 'end': 190, 'compact_start': [50], 'compact_end': [100]}
+    {'start': 200, 'end': 300, 'compact_start': [120], 'compact_end': [170]}
+    {'start': 270, 'end': 370, 'compact_start': [140], 'compact_end': [240]}
+    {'start': 700, 'end': 850, 'compact_start': [280], 'compact_end': [430]}
+    {'start': 820, 'end': 870, 'compact_start': [400], 'compact_end': [450]}
+    {'start': 800, 'end': 900, 'compact_start': [380], 'compact_end': [480]}
     
     UNIT TEST 10 - boxes out of order
     >>> ec10 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -283,11 +285,11 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec10)
     >>> map_box(bc10, ec10)
     >>> for coord in bc10: print(coord)
-    {'start': 230, 'end': 300, 'compact_start': 120, 'compact_end': 170}
-    {'start': 180, 'end': 210, 'compact_start': 90, 'compact_end': 110}
-    {'start': 820, 'end': 850, 'compact_start': 400, 'compact_end': 430}
-    {'start': 320, 'end': 420, 'compact_start': 190, 'compact_end': 270}
-    {'start': 660, 'end': 800, 'compact_start': 280, 'compact_end': 380}
+    {'start': 230, 'end': 300, 'compact_start': [120], 'compact_end': [170]}
+    {'start': 180, 'end': 210, 'compact_start': [90], 'compact_end': [110]}
+    {'start': 820, 'end': 850, 'compact_start': [400], 'compact_end': [430]}
+    {'start': 320, 'end': 420, 'compact_start': [190], 'compact_end': [270]}
+    {'start': 660, 'end': 800, 'compact_start': [280], 'compact_end': [380]}
     
     UNIT TEST 11 - empty box list
     >>> ec11 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
@@ -302,41 +304,48 @@ def map_box(box_coords, exons):
     >>> adjust_coordinates(ec12)
     >>> map_box(bc12, ec12)
     >>> for coord in bc12: print(coord)
-    {'start': 150, 'end': 175, 'compact_start': -1, 'compact_end': -1}
-    {'start': 300, 'end': 375, 'compact_start': -1, 'compact_end': -1}
-    {'start': 800, 'end': 825, 'compact_start': -1, 'compact_end': -1}
+    {'start': 150, 'end': 175, 'compact_start': [], 'compact_end': []}
+    {'start': 300, 'end': 375, 'compact_start': [], 'compact_end': []}
+    {'start': 800, 'end': 825, 'compact_start': [], 'compact_end': []}
     
     UNIT TEST 13 - >= 1 box inside each exon with intron_size=20
-    >>> ec13 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400},{'start': 700, 'end': 900}]
+    >>> ec13 = [{'start': 100, 'end': 200},{'start': 250, 'end': 400}, {'start': 700, 'end': 900}]
     >>> bc13 = [{'start': 150, 'end': 160}, {'start': 170, 'end': 190}, {'start': 270, 'end': 290}, {'start': 300, 'end': 350}, {'start': 360, 'end': 375}, {'start': 800, 'end': 825}, {'start': 830, 'end': 880}]
     >>> adjust_coordinates(ec13, intron_size=20)
     >>> map_box(bc13, ec13)
     >>> for coord in bc13: print(coord)
-    {'start': 150, 'end': 160, 'compact_start': 70, 'compact_end': 80}
-    {'start': 170, 'end': 190, 'compact_start': 90, 'compact_end': 110}
-    {'start': 270, 'end': 290, 'compact_start': 160, 'compact_end': 180}
-    {'start': 300, 'end': 350, 'compact_start': 190, 'compact_end': 240}
-    {'start': 360, 'end': 375, 'compact_start': 250, 'compact_end': 265}
-    {'start': 800, 'end': 825, 'compact_start': 410, 'compact_end': 435}
-    {'start': 830, 'end': 880, 'compact_start': 440, 'compact_end': 490}
+    {'start': 150, 'end': 160, 'compact_start': [70], 'compact_end': [80]}
+    {'start': 170, 'end': 190, 'compact_start': [90], 'compact_end': [110]}
+    {'start': 270, 'end': 290, 'compact_start': [160], 'compact_end': [180]}
+    {'start': 300, 'end': 350, 'compact_start': [190], 'compact_end': [240]}
+    {'start': 360, 'end': 375, 'compact_start': [250], 'compact_end': [265]}
+    {'start': 800, 'end': 825, 'compact_start': [410], 'compact_end': [435]}
+    {'start': 830, 'end': 880, 'compact_start': [440], 'compact_end': [490]}
+
+    UNIT TEST 14 - box spanning multiple exons
+    >>> ec14 = [{'start': 100, 'end': 200}, {'start': 250, 'end': 400}, {'start': 700, 'end': 900}]
+    >>> bc14 = [{'start': 150, 'end': 300}, {'start': 150, 'end': 750}]
+    >>> adjust_coordinates(ec14, intron_size=20)
+    >>> map_box(bc14, ec14)
+    >>> for coord in bc14: print(coord)
+    {'start': 150, 'end': 300, 'compact_start': [70, 140], 'compact_end': [120, 190]}
+    {'start': 150, 'end': 750, 'compact_start': [70, 140, 310], 'compact_end': [120, 290, 360]}
     
-    
-    '''
-    
+    '''    
     for b in box_coords:
         if b['start'] > b['end']:
             tmp = b['start']
             b['start'] = b['end']
             b['end'] = tmp
-        b['compact_start'] = -1
-        b['compact_end'] = -1
+        b['compact_start'] = []
+        b['compact_end'] = []
         for exon in exons:
             if exon['end'] <= b['start'] or exon['start'] >= b['end']: continue
+
             b_start_compact = exon['compact_start'] if b['start'] < exon['start'] else exon['compact_start'] + b['start'] - exon['start']
             b_end_compact = exon['compact_end'] if b['end'] > exon['end'] else exon['compact_end'] - (exon['end'] - b['end'])
-            b['compact_start'] = b_start_compact
-            b['compact_end'] = b_end_compact
-            break
+            b['compact_start'].append(b_start_compact)
+            b['compact_end'].append(b_end_compact)
 
 def map_point(point_coords, exons):
     
@@ -496,6 +505,7 @@ def get_introns_from_exons(exons):
     if len(flat_exons) % 2 == 1: flat_exons = [0] + flat_exons
 
     flat_exons_compact = [(exon['compact_start'], exon['compact_end']) for exon in exons]
+    flat_exons_compact = sorted(flat_exons_compact, key=lambda x: (x[0], x[1]))
     flat_exons_compact = [item for sublist in flat_exons_compact for item in sublist][:-1]
     if len(flat_exons_compact) % 2 == 1: flat_exons_compact = [0] + flat_exons_compact
     for i in range(0, len(flat_exons) - 1, 2):
