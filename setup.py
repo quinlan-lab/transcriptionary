@@ -7,7 +7,7 @@ long_description = 'Create interactive and customizable gene transcript visualiz
 
 setup(
 		name ='transcriptionary',
-		version ='0.1.0',
+		version ='0.1.1',
 		author ='Suchita Lulla',
 		author_email ='suchitalulla@gmail.com',
 		url ='https://github.com/quinlan-lab/transcriptionary',

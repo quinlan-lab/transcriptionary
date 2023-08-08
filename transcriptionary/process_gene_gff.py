@@ -14,8 +14,12 @@ def get_gene_feature(gff_db, gene_name):
     #get ID from name
     for f in gff_db.all_features(featuretype='gene'):
         try:
+            #if gene_name in f['Name'][0]: return f
             if gene_name in f['Name'][0]: return f
-        except: continue
+        except:
+            try:
+                if gene_name in f['gene_name'][0]: return f
+            except: continue
     raise ValueError('No gene with name {}'.format(gene_name))
 
 def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
@@ -44,17 +48,26 @@ def get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs):
                 
     #indiv mRNAs
     transcripts = list(gff_db.children(gene_feature, featuretype='mRNA')) + list(gff_db.children(gene_feature, featuretype='transcript'))
-    possible_transcripts = [t['Name'][0] for t in transcripts] + [t['ID'][0] for t in transcripts] + [t['ID'][0].split(':')[-1] for t in transcripts] #user can access by Name (ex. KCNQ2-201), ID (ex. transcript:ENST00000344425), or the ID after the colon (ex. ENST00000344425)
+    try: #gff
+        possible_transcripts = [t['Name'][0] for t in transcripts] + [t['ID'][0] for t in transcripts] + [t['ID'][0].split(':')[-1] for t in transcripts] #user can access by Name (ex. KCNQ2-201), ID (ex. transcript:ENST00000344425), or the ID after the colon (ex. ENST00000344425)
+    except: #gtf
+        possible_transcripts = [t['transcript_name'][0] for t in transcripts] + [t['transcript_id'][0] for t in transcripts] + [t['transcript_id'][0].split(':')[-1] for t in transcripts] #user can access by Name (ex. KCNQ2-201), ID (ex. transcript:ENST00000344425), or the ID after the colon (ex. ENST00000344425)
     if transcript_IDs != 'all':
         for ID in transcript_IDs:
             if ID not in possible_transcripts and ID != 'flattened-exons': print('No such transcript {}; skipping'.format(ID))
-        transcripts = [t for t in transcripts if t['Name'][0]  in transcript_IDs or t['ID'][0] in transcript_IDs or t['ID'][0].split(':')[-1] in transcript_IDs]
+        try:
+            transcripts = [t for t in transcripts if t['Name'][0]  in transcript_IDs or t['ID'][0] in transcript_IDs or t['ID'][0].split(':')[-1] in transcript_IDs]
+        except:
+            transcripts = [t for t in transcripts if t['transcript_name'][0]  in transcript_IDs or t['transcript_id'][0] in transcript_IDs or t['transcript_id'][0].split(':')[-1] in transcript_IDs]
 
     for t in transcripts:
         exons = list(gff_db.children(t, featuretype='exon'))
         exon_coords = [{'start': e.start, 'end': e.end, 'compact_start': -1, 'compact_end': -1} for e in exons]
+        exon_coords = sorted(exon_coords, key=lambda d: d['start'])
         direction = t.strand if plot_params['plot_direction'] else ''
-        tname = t['Name'][0]
+        try: tname = t['Name'][0] #gff
+        except: tname = t['transcript_name'][0] #gtf
         UTRs = get_UTRs(t)
-        transcript_dict[tname] = dict(ID=t['ID'][0], chr_num=chr_num, exons=exon_coords, direction=direction, UTRs=UTRs)
+        try: transcript_dict[tname] = dict(ID=t['ID'][0], chr_num=chr_num, exons=exon_coords, direction=direction, UTRs=UTRs) #gff
+        except: transcript_dict[tname] = dict(ID=t['transcript_id'][0], chr_num=chr_num, exons=exon_coords, direction=direction, UTRs=UTRs) #gtf
     return transcript_dict
