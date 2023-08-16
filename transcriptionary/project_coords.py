@@ -471,23 +471,25 @@ def map_point(point_coords, exons):
 
 #x coords must be ints
 def map_line(line_coords,exons,seqid):
+    def flatten(ls): return [i for s in ls for i in s]
+
     line_coords = [di for di in line_coords if di['chrom'] == seqid]
     if len(line_coords) == 0: return [[]],[[]]
 
     xs_ls = []
     ys_ls = []
 
-    if 'start' in line_coords[0].keys():
+    if 'start' in line_coords[0].keys(): #if bedgraph
         map_box(line_coords, exons)
         for co in line_coords:
-            if co['compact_start'] < 0: continue
-            xs = list(range(co['compact_start'],co['compact_end']+1))
+            if co['compact_start'] == []: continue
+            xs = flatten([list(range(co['compact_start'][i], co['compact_end'][i])) for i in range(len(co['compact_start']))])
             ys = []
             for x in xs:
                 ys.append(co['y'])    
             xs_ls.append(xs)
             ys_ls.append(ys)
-    else:   
+    else:   #if csv/tsv
         map_point(line_coords, exons)
 
         for exon in exons:
