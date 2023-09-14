@@ -48,8 +48,8 @@ def add_variant_axis(plot_params, variant_params, plot, axis_label, allele_vals,
             y_max = max([0,2*y_max])
             num_ticks = 1
 
-    min_tick = plot_params['y0']+variant_params['min_lollipop_height']
-    max_tick = plot_params['plot_height']-variant_params['lollipop_radius']-variant_params['lollipop_line_width']
+    min_tick = plot_params['y0']+plot_params['min_lollipop_height']
+    max_tick = plot_params['plot_height']-plot_params['lollipop_radius']-plot_params['lollipop_line_width']
     tick_precision = 2
     tick_scientific_notation = False
         

@@ -3,7 +3,7 @@ from bokeh.plotting import figure
 from .axes import format_ticks
 import numpy as np
 
-def add_linear_log_scale(variant_params, axes, glyph_dict):
+def add_linear_log_scale(plot_params, axes, glyph_dict):
     div_type = Div(text="""Lollipop height:""", width=200, height=15)
     div_scale = Div(text="""Lollipop height scale:""", width=200, height=15)
     
@@ -12,8 +12,8 @@ def add_linear_log_scale(variant_params, axes, glyph_dict):
     
     def log10(f): return np.log10(f) if f > 0 else 0
 
-    radio_group_type = RadioGroup(labels=variant_type_labels, active=0 if variant_params['default_y_axis'] == 'AC' else 1, width=200)
-    radio_group_scale = RadioGroup(labels=variant_scale_labels, active=0 if variant_params['default_y_axis_scale'] == 'linear' else 1, width=200)
+    radio_group_type = RadioGroup(labels=variant_type_labels, active=0 if plot_params['default_y_axis'] == 'AC' else 1, width=200)
+    radio_group_scale = RadioGroup(labels=variant_scale_labels, active=0 if plot_params['default_y_axis_scale'] == 'linear' else 1, width=200)
 
     radio_group_type.js_on_click(CustomJS(args=dict(radio_group_scale=radio_group_scale,axes=axes, 
                                                     variant=glyph_dict['Variant']), 
@@ -115,9 +115,9 @@ def add_linear_log_scale(variant_params, axes, glyph_dict):
     
     return div_type,radio_group_type,div_scale,radio_group_scale
 
-def add_checkbox(plot_ls, line_axes, glyph_dict, plot_params, variant_params):
+def add_checkbox(plot_ls, line_axes, glyph_dict, plot_params):
     labels = []
-    for tup in zip(['UTRs','Direction','Variant'], [plot_params['plot_UTRs'], plot_params['plot_direction'], variant_params['plot_variants']]):
+    for tup in zip(['UTRs','Direction','Variant'], [plot_params['plot_UTRs'], plot_params['plot_direction'], plot_params['plot_variants']]):
         if tup[1]: labels.append(tup[0])
     active = list(range(len(labels)))
     checkbox = CheckboxGroup(labels=labels,active=active, width=100)

@@ -1,7 +1,9 @@
 import numpy as np
-from bokeh.models import ColumnDataSource, Rect, Segment, Circle, MultiPolygons
+from bokeh.models import ColumnDataSource, Rect, Segment, Circle
 from .colors import  color_variants,lighten_hex_color
 import math
+
+def flatten(ls): return [i for s in ls for i in s]
 
 def center_feature(feature):
     center = feature[0] + (feature[1] - feature[0])/2
@@ -120,8 +122,6 @@ def add_intron_glyph(plot_params, plot, introns, fill_alpha=1, width=14):
 
 
 def add_UTR_glyph(plot_params, plot, UTRs, fill_alpha=0.4):
-
-    def flatten(ls): return [i for s in ls for i in s]
     
     features_original = flatten([[(UTR['start'], UTR['end'])]*len(UTR['compact_start']) for UTR in UTRs]) #duplicate original coordinates for each exon spanned by box
     features_compact = flatten([zip(UTR['compact_start'], UTR['compact_end']) for UTR in UTRs])
@@ -153,41 +153,36 @@ def add_UTR_glyph(plot_params, plot, UTRs, fill_alpha=0.4):
 
     return plot.add_glyph(source, glyph, hover_glyph=hover_glyph)
 
-def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_ls, line_width=2):
-    
-    variant_ls = [v for v in variant_ls if v['compact_pos'] >= 0]
+def add_variant_glyph(plot_params, variant_params, variant_set, transcript_ID, plot, line_width=2): #called for each transcript for each variant set
+    variant_ls = [v for v in variant_params[variant_set]['variant_ls'] if v['compact_pos'] >= 0]
     N = len(variant_ls)
     if N == 0: 
-        variant_params['add_variant_axis'] = False
         return None, None
-
-    if variant_params['variant_format'].lower().strip('.') == 'bed': variant_params['add_variant_axis'] = False
-    elif sum([v['allele_frequency'] for v in variant_ls]) < 0:
-        variant_params['add_variant_axis'] = False
-    else: variant_params['add_variant_axis'] = True
-
+    
     x = [v['compact_pos'] for v in variant_ls]
     y0s = [plot_params['y0'] - plot_params['exon_height'] / 2] * N
 
-    def get_y1(ls, yaxis, yaxis_scale):
+    #def get_y1(ls, yaxis, yaxis_scale):
+    def get_y1(ys, all_ys, yaxis, yaxis_scale):
 
         if yaxis == 'AC' and yaxis_scale == 'linear':
             def round_up_to_half(n): #round float up to 0.5
                 return math.ceil(n * 2)/2
 
-            y_max_order = math.floor(math.log10(max(ls)))
+            y_max_order = math.floor(math.log10(max(all_ys)))
 
             min_y_axis = 0
-            max_y_axis = round_up_to_half(max(ls)*10**(-y_max_order)) * 10**y_max_order
+            max_y_axis = round_up_to_half(max(all_ys)*10**(-y_max_order)) * 10**y_max_order
 
         elif yaxis == 'AF' and yaxis_scale == 'linear':
             min_y_axis = 0
             max_y_axis = 1.0
 
         elif yaxis_scale == 'log':
-            ls = [np.log10(y) if y > 0 else 0 for y in ls]
-            min_y_axis = math.floor(min(ls))
-            max_y_axis = math.ceil(max(ls))
+            ys = [np.log10(y) if y > 0 else 0 for y in ys]
+            all_ys = [np.log10(y) if y > 0 else 0 for y in all_ys]
+            min_y_axis = math.floor(min(all_ys))
+            max_y_axis = math.ceil(max(all_ys))
 
             if min_y_axis == max_y_axis:
                 if min_y_axis == max_y_axis == 0:
@@ -198,70 +193,79 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
                     max_y_axis = 2*max_y_axis
 
             if yaxis == 'AF': # if log AF, convert negative values to positive coordinates
-                ls = [y - min_y_axis if y != 0 else 0 for y in ls]
+                ys = [y - min_y_axis if y != 0 else 0 for y in ys]
 
         else: # if lollipop heights are not meaningful
             min_y_axis = 0
             max_y_axis = 1
 
-        y1_circle = [y * (plot_params['plot_height'] - plot_params['y0'] - variant_params['min_lollipop_height'] - variant_params['lollipop_radius'] - line_width - 2) / (max_y_axis - min_y_axis) + plot_params['y0'] + variant_params['min_lollipop_height'] for y in ls]
-        y1_segment = [y - variant_params['lollipop_radius'] for y in y1_circle]
+        y1_circle = [y * (plot_params['plot_height'] - plot_params['y0'] - plot_params['min_lollipop_height'] - plot_params['lollipop_radius'] - line_width - 2) / (max_y_axis - min_y_axis) + plot_params['y0'] + plot_params['min_lollipop_height'] for y in ys]
+        y1_segment = [y - plot_params['lollipop_radius'] for y in y1_circle]
 
         return y1_circle, y1_segment
 
-    r = [variant_params['lollipop_radius']] * N
+    r = [plot_params['lollipop_radius']] * N
     color_variants(plot_params, variant_params, variant_ls, transcript_ID)
     colors = [v['color'] for v in variant_ls]
-
     hover_colors = [lighten_hex_color(c, 40) for c in colors]
 
-    if variant_params['add_variant_axis']: 
+    allele_counts = [v['allele_count'] for v in variant_ls]
+    #allele_numbers = [v['allele_number'] for v in variant_ls]
+    allele_frequencies = [v['allele_frequency'] for v in variant_ls]
 
-        allele_counts = [v['allele_count'] for v in variant_ls]
-        allele_numbers = [v['allele_number'] for v in variant_ls]
-        allele_frequencies = [v['allele_frequency'] for v in variant_ls]
+    all_vars = flatten([variant_params[var_set]['variant_ls'] for var_set in variant_params]) #will need list of all vars to get_y1s since we want every variant set to be plotted on the same scale
+    all_vars = [v for v in all_vars if v['compact_pos'] >= 0]
+    all_allele_counts = [v['allele_count'] for v in all_vars]
+    all_allele_frequencies = [v['allele_frequency'] for v in all_vars]
 
-        #set original lollipop ys based on default_y_axis (allele count or allele freq) and default_y_axis_scale (log or linear)
-        if variant_params['default_y_axis'] == 'AC': ys = allele_counts
-        elif variant_params['default_y_axis'] == 'AF': ys = allele_frequencies
-
-        if variant_params['default_y_axis_scale'] == 'linear': fn = lambda x: x
-        elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AC': fn = lambda x: np.log10(x) if x > 0 else 0
-        elif variant_params['default_y_axis_scale'] == 'log' and variant_params['default_y_axis'] == 'AF': fn = lambda x: np.log10(x) if x > 0 else 0
-        
-        y1_circle,y1_segment = get_y1(ys, variant_params['default_y_axis'], variant_params['default_y_axis_scale'])
+    #set original lollipop ys based on default_y_axis (allele count or allele freq) and default_y_axis_scale (log or linear)
+    if plot_params['default_y_axis'] == 'AC': 
+        ys = allele_counts
+        all_ys = all_allele_counts
+    elif plot_params['default_y_axis'] == 'AF': 
+        ys = allele_frequencies
+        all_ys = all_allele_frequencies
+    
+    if plot_params['add_variant_axis']:
+        y1_circle,y1_segment = get_y1(ys, all_ys, plot_params['default_y_axis'], plot_params['default_y_axis_scale'])
 
     else:
         #if lollipop heights don't hold meaning, set them to 1/2 max height
-        y1_circle,y1_segment = get_y1([1 for v in variant_ls], '', '')
+        y1_circle,y1_segment = get_y1([1 for v in variant_ls], all_ys, '', '')
         y1_circle = [y1/2 for y1 in y1_circle] 
         y1_segment = [y1/2 - line_width for y1 in y1_segment]
 
     cds_dict = dict(x=x, r=r, y0=y0s, y1_circle=y1_circle, y1_segment=y1_segment,
+                                variant_set=[v['variant_set'] for v in variant_ls],
                                 pos=[v['pos'] for v in variant_ls], sev=[v[transcript_ID + '_severity'] for v in variant_ls],
-                                colors=colors, hover_colors=hover_colors, line_alpha=[1 for v in variant_ls])
+                                colors=colors, hover_colors=hover_colors, line_alpha=[1 for _ in variant_ls])
+    
+    try: cds_dict['ref']=[v['ref'] for v in variant_ls]
+    except: pass
+    try: cds_dict['alt']=[v['alt'] for v in variant_ls]
+    except: pass
 
-    if variant_params['variant_format'].lower().strip('.') == 'vcf':
+    if plot_params['add_variant_axis']:
         allele_counts = [v['allele_count'] for v in variant_ls]
-        allele_numbers = [v['allele_number'] for v in variant_ls]
         allele_frequencies = [v['allele_frequency'] for v in variant_ls]
 
         cds_dict['allele_counts']=allele_counts
-        cds_dict['allele_numbers']=allele_numbers
         cds_dict['allele_frequencies']=allele_frequencies
-        cds_dict['ref']=[v['ref'] for v in variant_ls]
-        cds_dict['alt']=[v['alt'] for v in variant_ls]
 
-    for info_field in variant_params['info_annotations']: cds_dict[info_field] = [v[info_field] for v in variant_ls]
-    if variant_params['vep']: 
-        for vep_field in variant_params['vep']['vep_fields']: cds_dict[vep_field] = [v[transcript_ID + '_' + vep_field] for v in variant_ls]
+    for info_field in variant_params[variant_set]['info_annotations']: cds_dict[info_field] = [v[info_field] for v in variant_ls]
 
-    if variant_params['add_variant_axis']:
+    for vep_field in variant_params[variant_set]['vep']['vep_fields']: cds_dict[vep_field] = [v[transcript_ID + '_' + vep_field] for v in variant_ls]
 
-        y1_ci_li_ct, y1_sg_li_ct = get_y1(allele_counts, 'AC', 'linear')
-        y1_ci_lg_ct, y1_sg_lg_ct = get_y1(allele_counts, 'AC', 'log')
-        y1_ci_li_fr, y1_sg_li_fr = get_y1(allele_frequencies, 'AF', 'linear')
-        y1_ci_lg_fr, y1_sg_lg_fr = get_y1(allele_frequencies, 'AF', 'log')
+    if plot_params['add_variant_axis']:
+
+        # y1_ci_li_ct, y1_sg_li_ct = get_y1(allele_counts, 'AC', 'linear')
+        # y1_ci_lg_ct, y1_sg_lg_ct = get_y1(allele_counts, 'AC', 'log')
+        # y1_ci_li_fr, y1_sg_li_fr = get_y1(allele_frequencies, 'AF', 'linear')
+        # y1_ci_lg_fr, y1_sg_lg_fr = get_y1(allele_frequencies, 'AF', 'log')
+        y1_ci_li_ct, y1_sg_li_ct = get_y1(allele_counts, all_allele_counts, 'AC', 'linear')
+        y1_ci_lg_ct, y1_sg_lg_ct = get_y1(allele_counts, all_allele_counts, 'AC', 'log')
+        y1_ci_li_fr, y1_sg_li_fr = get_y1(allele_frequencies, all_allele_frequencies, 'AF', 'linear')
+        y1_ci_lg_fr, y1_sg_lg_fr = get_y1(allele_frequencies, all_allele_frequencies, 'AF', 'log')
 
         variant_axis_dict = dict(
             y1_ci_li_ct=y1_ci_li_ct, y1_sg_li_ct=y1_sg_li_ct,
@@ -286,8 +290,6 @@ def add_variant_glyph(plot_params, variant_params, transcript_ID, plot, variant_
 
 def add_track_glyph(user_track_params, track_name, plot, tracks, height, y_pos):
     
-    def flatten(ls): return [i for s in ls for i in s]
-
     tracks = [di for di in tracks if len(di['compact_start'])>0]
     if not tracks: 
         tracks = [{'ID': 'empty track', 'start': 0, 'end': 0, 'compact_start': [0], 'compact_end': [0], 'color': '#111111', 'strand': ''}]

@@ -2,14 +2,14 @@
 
 # transcriptionary: customizable, interactive gene transcript plots
 
-transcriptionary takes user-defined parameters to create a static .html document displaying gene transcripts with introns compressed. 
+`transcriptionary`` takes user-defined parameters to create a static .html document displaying gene transcripts with introns compressed. 
 
 Exons are annotated with coordinates and length.
 
-Variants are specified as VCF or BED and are annotated with interactive hover boxes. For VCF, lollipops are annotated with allele count, allele frequency, mutation type, VEP annotations, and are colored by severity. Radio buttons in the plot give the option to view lollipop heights as allele count or allele frequency, and linear or log scale. 
-If a VCF with VEP annotations is provided, lollipops will be categorized as LOW, MED, or HIGH impact as per [geneimpacts](https://github.com/brentp/geneimpacts) and colored accordingly. If no VEP annotation is present for a given transcript, lollipops on that transcript will be annotated as NONE. For a VCF with VEP annotations, lollipops can be turned on and off by severity with a checkbox.
+Variants are specified as VCF or BED and are annotated with interactive hover boxes. For VCF, lollipops are automatically annotated with REF, ALT, allele count, allele frequency and are colored by severity if this information is provided. Radio buttons in the HTML plot give the option to view lollipop heights as allele count or allele frequency, and linear or log scale. 
+If a variant file with VEP annotations is provided, lollipops will be categorized as LOW, MED, or HIGH impact as per [geneimpacts](https://github.com/brentp/geneimpacts) and colored accordingly. If no VEP annotation is present for a given transcript, lollipops on that transcript will be annotated as NONE. For a variant file with VEP annotations, lollipops can be turned on and off by severity with a checkbox. If more than one variant file is provided, each lollipop is annotated with the variant set it comes from, and each set of variants can be turned on and off with a checkbox.
 
-Tracks are specified as GTF or BED and are annotated with name, coordinates, and length, along with other specified fields from GTF. Colors can be specified by the user or chosen randomly from a color palette.
+Tracks are specified as GTF or BED and are annotated with name, coordinates, and length, along with other specified fields from the GTF/BED. Colors can be specified by the user or chosen randomly from a color palette.
 
 Coordinate-based information can be provided as CSV/TSV (point-based) or BEDGRAPH (interval-based). The user can customize the y axis with tick precision and scientific notation. The user can specify the line color, alpha value, and choose whether to fill in the area under the curve.
 
@@ -38,55 +38,69 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 - `all`: plot all transcripts, including `flattened-exons`.
 - '[`<transcript_name_1>`, `<transcript_name_2>`, ...]': specify transcripts
 
-`gff_path`: path to gff (for feature coordinates). When running the first time, a `gff.db` file will be created for you. When rerunning, can change this parameter to the .gff.db file to avoid recreating it.
+`gff_path`: path to GFF or GTF (for feature coordinates). When running the first time, a `gff.db` file will be created for you. When rerunning, can change this parameter to the .gff.db file to avoid recreating it.
 
 `gene_name`: gene name
 
-`chrom`: chromosome
+`chrom`: chromosome (from features GFF/GTF)
 
 `plot_height`: height of plot in pixels; default 200
 `plot_width`: width of plot in pixels; default 1500
 `track_height`: height of tracks in pixels; default 10
 `exon_height`: height of exons in pixels; default 16
-`intron_size`: size to which introns are compressed; default 20
+`intron_size`: size to which introns are compressed; default 10
 
 `plot_UTRs`: show UTRs (boolean)
 `plot_direction`: show arrows with direction (boolean)
+`plot_variants`: show lollipops (boolean)
+
+`min_lollipop_height`: minimum height of lollipop in pixels; default 15
+`lollipop_radius`: radius of lollipop in pixels; default 5
+`lollipop_line_width`: line width of lollipop in pixels; default 2
+
+`default_y_axis`: set lollipop heights according to allele count (`AC`) or allele frequency (`AF`) by default (can be toggled with HTML output)
+`default_y_axis_scale`: scale lollipop heights according on a linear (`linear`) or log (`log`) scale by default (can be toggled with HTML output)
 
 `glyph_colors`: specify feature colors (can be hex code or any name from default_colors/named_colors.yaml)
 - `intron`: default 'gray 11'
 - `exon`: default 'davys gray'
 - `arrow`: default '#252525'
 - `UTR`: default '#969696'
-- `variant`: default lollipop color if no severity information is available; default 'charcoal'
 
 `palettes_filepath`: filepath to config file with color palettes; default `default_colors/palettes.yaml`
 `named_colors_filepath`: filepath to config file mapping hex color codes to named colors; default `default_colors/named_colors.yaml`
 `track_palette`: palette to draw random track colors from; can be any palette in default_colors/palettes.yaml
 
-`plot_variants`: show lollipops (boolean)
-`variant_format`: file format of variant file, can be VCF or BED
-`filepath`: path to VCF or BED (for variant coordinates)
-`header`: list of column names (BED only)
-`chrom`: chromosome
-`info_annotations`: INFO fields to add to hover boxes (VCF only)
-`vep`: VCF only; leave empty if not VEP annotated
-- `field_name`: name of INFO field with VEP string (e.g. vep, ann, csq)
-- `vep_fields`: vep fields to add to hover annotations
-    - `<vep_field>`
-- `annotate_severity_by`: possible arguments are `transcript_severity` (use VEP annotations from given transcript) and `max_severity` (use VEP annotation from most severe transcript specified in `transcripts` argument); these apply to `vep_fields` also
+`#VCF`
+`<variant_set>`: variant set label
+- `format`: file format of variant file; 'vcf'
+- `filepath`: path to VCF
+- `chrom`: chromosome
+- `info_annotations`: VCF only; INFO fields to add to hover boxes
+    - `<info_field_1>`
+- `vep`: VCF only; leave empty if not VEP annotated
+    - `field_name`: name of INFO field with VEP string (e.g. vep, ann, csq)
+    - `vep_fields`: vep fields to add to hover boxes
+        - `<vep_field_1>`
+- `annotate_severity_by`: VCF only; possible arguments are `transcript_severity` (use VEP annotations from given transcript) and `max_severity` (use VEP annotation from transcript with most severe consequenced specified in `transcripts` argument); these apply to `vep_fields` also
+- `color`: default lollipop color; use hex codes or predefined colors from default_colors/named_colors.yaml
+- `variant_severity_colors`: specify lollipop colors by variant severity; use hex codes or predefined colors from default_colors/named_colors.yaml
+    - `LOW`:
+    - `MED`:
+    - `HIGH`:
 
-`default_y_axis`: set lollipop heights according to allele count (`AC`) or allele frequency (`AF`) by default (can be toggled with HTML output)
-`default_y_axis_scale`: scale lollipop heights according on a linear (`linear`) or log (`log`) scale by default (can be toggled with HTML output)
-
-`min_lollipop_height`: minimum height of lollipop in pixels; default 15
-`lollipop_radius`: radius of lollipop in pixels; default 5
-`lollipop_line_width`: line width of lollipop in pixels; default 2
-`variant_severity_colors`: specify lollipop colors by variant severity; use hex codes or predefined colors from default_colors/named_colors.yaml
-- LOW:
-- MED:
-- HIGH:
-- NONE:
+`#BED (no header)`
+`<variant_set>`: variant set label
+- `format`: file format of variant file; 'vcf'
+- `filepath`: path to VCF
+- `chrom`: chromosome
+- `header`: BED only; list of column names in BED file
+- `color`: default lollipop color; use hex codes or predefined colors from default_colors/named_colors.yaml
+- `variant_severity_colors`: specify lollipop colors by variant severity; use hex codes or predefined colors from default_colors/named_colors.yaml
+    - `LOW`:
+    - `MED`:
+    - `HIGH`:
+- `consequence_idx`: BED only; index of file containing 'Consequence' field from VEP (leave empty or set to False if no such column); 0-based
 
 `<track_name>`: track label
 - `format`: file format of track file, can be GTF or BED
@@ -101,11 +115,11 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 - `y_axis_label`: y axis label
 - `num_ticks`: number of y ticks; default 3
 - `tick_precision`: number of decimal places
-- `tick_scientific_notation`: (bool)
+- `tick_scientific_notation`: (boolean)
 - `smoothing slider`: include slider widget to smooth lines (boolean)
 - `lines`: lines to plot on this axis
     - `<line_name>`:
-        - `filepath`: (.csv or .bedgraph)
+        - `filepath`: (CSV or BEDGRAPH)
         - `color`: 
         - `alpha`:
         - `fill_area`: fill area under the curve (boolean)
