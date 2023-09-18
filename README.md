@@ -13,7 +13,7 @@ Tracks are specified as GTF or BED and are annotated with name, coordinates, and
 
 Coordinate-based information can be provided as CSV/TSV (point-based) or BEDGRAPH (interval-based). The user can customize the y axis with tick precision and scientific notation. The user can specify the line color, alpha value, and choose whether to fill in the area under the curve.
 
-Headers are not supported for BED files. BED files must have at least three columns, which should be `chrom`, `start`, and `end`.
+If BED file contains a header, the line must begin with `#`. BED files must have at least three columns, which should be `chrom`, `start`, and `end`.
 
 Plots can be output as HTML, PNG, or SVG.
 
@@ -76,7 +76,7 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 - `format`: file format of variant file; 'vcf'
 - `filepath`: path to VCF
 - `chrom`: chromosome
-- `info_annotations`: VCF only; INFO fields to add to hover boxes
+- `info_annotations`: for VCF, INFO fields to add to hover boxes
     - `<info_field_1>`
 - `vep`: VCF only; leave empty if not VEP annotated
     - `field_name`: name of INFO field with VEP string (e.g. vep, ann, csq)
@@ -89,12 +89,14 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
     - `MED`:
     - `HIGH`:
 
-`#BED (no header)`
+`#BED (if header in file, it must start with #)`
 `<variant_set>`: variant set label
 - `format`: file format of variant file; 'vcf'
 - `filepath`: path to VCF
 - `chrom`: chromosome
 - `header`: BED only; list of column names in BED file
+- `info_annotations`: for BED, column names to add to hover boxes
+        - `<info_field_1>`
 - `color`: default lollipop color; use hex codes or predefined colors from default_colors/named_colors.yaml
 - `variant_severity_colors`: specify lollipop colors by variant severity; use hex codes or predefined colors from default_colors/named_colors.yaml
     - `LOW`:

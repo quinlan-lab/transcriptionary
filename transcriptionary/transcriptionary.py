@@ -2,7 +2,7 @@ from .process_gene_gff import gff_to_db, get_gene_feature, get_transcript_dict
 from .get_coords import get_variants,get_line,get_track
 from .colors import color_boxes
 from .axes import add_user_axis,add_variant_axis
-from .glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph, flatten
+from .glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph
 from .widget_callbacks import add_checkbox,add_variant_severity_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom,add_variant_sets_checkbox
 from . import project_coords
 import numpy as np
@@ -55,7 +55,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
     if plot_params['add_variant_axis']:
         def log10(f): return np.log10(f) if f > 0 else 0
 
-        all_vars = flatten([variant_params[var_set]['variant_ls'] for var_set in variant_params]) 
+        all_vars = sum([variant_params[var_set]['variant_ls'] for var_set in variant_params], []) #flatten list 
         all_vars_in_transcript = [v for v in all_vars if v['compact_pos'] >= 0] #get list of all variants in transcript to get max and min for variant axes
         allele_counts = [v['allele_count'] for v in all_vars_in_transcript]
         allele_frequencies = [v['allele_frequency'] for v in all_vars_in_transcript]
@@ -114,7 +114,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
                 xs_ls,ys_ls = project_coords.map_line(user_lines[axis_name][line], transcript_dict['exons'], user_line_params[axis_name]['lines'][line]['chrom'])
                 all_xs.append(xs_ls)
                 all_ys.append(ys_ls)
-        try: y_max = max([i for s in [i for s in all_ys for i in s] for i in s]) #flatten 3D list to 1D list to take max #TODO change to flatten
+        try: y_max = max([i for s in [i for s in all_ys for i in s] for i in s]) #flatten 3D list to 1D list to take max
         except: continue
 
         for idx,line in enumerate(user_line_params[axis_name]['lines']):
@@ -188,10 +188,19 @@ def parse_args():
                 variant_params[variant_set]['info_annotations'] = []
         except: variant_params[variant_set]['info_annotations'] = []
 
+        try: #if consequence_idx nonexistent,
+            int(variant_params[variant_set]['consequence_idx'])
+        except: variant_params[variant_set]['consequence_idx'] = False
+
+        #for BED files, replace space with underscore in annotation field names (space causes issues with hover box)
+        try:
+            variant_params[variant_set]['header'] = list(map(lambda field_name: str.replace(field_name, ' ', '_'), variant_params[variant_set]['header']))
+            variant_params[variant_set]['info_annotations'] = list(map(lambda field_name: str.replace(field_name, ' ', '_'), variant_params[variant_set]['info_annotations']))
+        except: pass
+
         try: #if vep empty or nonexistent, set to empty params
             if not variant_params[variant_set]['vep']: variant_params[variant_set]['vep'] = {'field_name': '' ,'vep_fields': [], 'annotate_severity_by': ''}
         except: variant_params[variant_set]['vep'] = {'field_name': '' ,'vep_fields': [], 'annotate_severity_by': ''}
-        # except: variant_params[variant_set]['vep'] = {'vep_fields': []}
 
     ### TRACKS ###
     for track_name in user_track_params:
@@ -249,7 +258,6 @@ def transcriptionary():
     for line_name in user_line_params:
         line_axes[line_name] = []
     
-    #for idx,ID in enumerate(transcript_IDs):
     for ID in transcript_IDs:
         title = 'gene={}; transcript={}/{}'.format(plot_params['gene_name'], ID, transcripts[ID]['ID'])
         if transcripts[ID]['direction']: title += ' ({})'.format(transcripts[ID]['direction'])

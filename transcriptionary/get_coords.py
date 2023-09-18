@@ -88,14 +88,17 @@ def get_variants(plot_params, variant_params, variant_set, transcripts, start, e
             if fi.readline().count('\t') != len(variant_params[variant_set]['header']) - 1:
                 print('Warning: number of fields in variant set {} header argument not equal to number of fields in file {} (check for trailing delimiters).'.format(variant_set, bed_path))
 
-        df = pd.read_csv(bed_path, names=variant_params[variant_set]['header'], sep='\t', index_col=None) 
+        df = pd.read_csv(bed_path, names=variant_params[variant_set]['header'], sep='\t', index_col=None, keep_default_na=False, comment='#') 
         variant_params[variant_set]['has_yaxis_info'] = False
+        if variant_params[variant_set]['consequence_idx']: plot_params['add_variant_severity_checkbox'] = True
 
         for _,row in df.iterrows():
             if str(row.iloc[0]) != str(variant_params[variant_set]['chrom']): continue
             di_variant = dict(pos=row.iloc[1], compact_start=-1, variant_set=variant_set, info_annotations=variant_params[variant_set]['info_annotations'], vep=variant_params[variant_set]['vep'], allele_count=0, allele_frequency=0, allele_number=0)
+
+            for info_field in variant_params[variant_set]['info_annotations']: di_variant[info_field] = row[info_field]
+
             if variant_params[variant_set]['consequence_idx']: #0-based
-                plot_params['add_variant_severity_checkbox'] = True
                 for transcript_ID in transcript_IDs: 
                     di_variant[transcript_ID + '_severity'] = VEP(row.iloc[variant_params[variant_set]['consequence_idx']],['Consequence']).impact_severity
             else:
