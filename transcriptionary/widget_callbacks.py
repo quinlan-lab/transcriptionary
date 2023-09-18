@@ -162,8 +162,9 @@ def add_variant_severity_checkbox(plot_ls, glyph_dict):
     active = list(range(len(labels)))
     checkbox = CheckboxGroup(labels=labels, active=active, width=100)
 
+    glyph_data_keys = [list(glyph.data_source.data.keys()) for glyph in glyphs]
     callback = CustomJS(args=dict(plot_ls=plot_ls, labels=labels, glyphs=glyphs, 
-                                    glyph_data_keys=list(glyphs[0].data_source.data.keys()), ori_data_sources = [g.data_source.data for g in glyphs],
+                                    glyph_data_keys=glyph_data_keys, ori_data_sources = [g.data_source.data for g in glyphs],
                                  ), code='''
         // get list of severity strings to include
         var severity_strings = [];
@@ -182,8 +183,8 @@ def add_variant_severity_checkbox(plot_ls, glyph_dict):
             }
 
             // set each list in data source to only the active indices
-            for (let k = 0; k < glyph_data_keys.length; k++){
-                glyphs[i].data_source.data[glyph_data_keys[k]] = active_indices.map(m => ori_data_sources[i][glyph_data_keys[k]][m])
+            for (let k = 0; k < glyph_data_keys[i].length; k++){
+                glyphs[i].data_source.data[glyph_data_keys[i][k]] = active_indices.map(m => ori_data_sources[i][glyph_data_keys[i][k]][m])
             }
             glyphs[i].data_source.change.emit()
         }
