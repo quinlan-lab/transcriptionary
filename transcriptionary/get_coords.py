@@ -28,7 +28,7 @@ def get_variants(plot_params, variant_params, variant_set, transcripts, start, e
 
         for v in vcf('{}:{}-{}'.format(seqid,start,end)):
 
-            di_variant = dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=v.ALT,            
+            di_variant = dict(pos=v.POS, compact_pos=-1, ref=v.REF, alt=';'.join(v.ALT),            
                     allele_count=get_allele_field(v,'AC'),
                     allele_number=get_allele_field(v,'AN'),
                     allele_frequency=get_allele_field(v,'AF'),

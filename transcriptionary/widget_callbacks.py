@@ -1,6 +1,5 @@
-from bokeh.models import ColumnDataSource,CustomJS,CheckboxGroup,Legend,Slider,Div,RadioGroup
+from bokeh.models import ColumnDataSource,CustomJS,CheckboxGroup,Slider,Div,RadioGroup
 from bokeh.plotting import figure
-from .axes import format_ticks
 import numpy as np
 
 def add_linear_log_scale(plot_params, axes, glyph_dict):
@@ -10,8 +9,6 @@ def add_linear_log_scale(plot_params, axes, glyph_dict):
     variant_type_labels = ['Allele count', 'Allele frequency']
     variant_scale_labels = ['Linear', 'Log']
     
-    def log10(f): return np.log10(f) if f > 0 else 0
-
     radio_group_type = RadioGroup(labels=variant_type_labels, active=0 if plot_params['default_y_axis'] == 'AC' else 1, width=200)
     radio_group_scale = RadioGroup(labels=variant_scale_labels, active=0 if plot_params['default_y_axis_scale'] == 'linear' else 1, width=200)
 
@@ -115,7 +112,7 @@ def add_linear_log_scale(plot_params, axes, glyph_dict):
     
     return div_type,radio_group_type,div_scale,radio_group_scale
 
-def add_checkbox(plot_ls, line_axes, glyph_dict, plot_params):
+def add_checkbox(glyph_dict, plot_params):
     labels = []
     for tup in zip(['UTRs','Direction','Variant'], [plot_params['plot_UTRs'], plot_params['plot_direction'], plot_params['plot_variants']]):
         if tup[1]: labels.append(tup[0])
@@ -124,28 +121,17 @@ def add_checkbox(plot_ls, line_axes, glyph_dict, plot_params):
     
     glyph_dict_checkbox = {label:glyph_dict[label] for label in labels}
 
-    callback = CustomJS(args=dict(plot_ls=plot_ls, line_axes=line_axes, labels=labels, glyph_dict_checkbox=glyph_dict_checkbox,
+    callback = CustomJS(args=dict(labels=labels, glyph_dict_checkbox=glyph_dict_checkbox,
                                  ), code='''
         function setVis(glyphs, vis){
             for (let i = 0; i < glyphs.length; i++){
-                if(glyphs[i] != null){
-                    glyphs[i].visible = vis
-                }
+                if(glyphs[i] != null) { glyphs[i].visible = vis }
             }
         }
-        
-        function setAxisVis(axis_name, vis){
-            for (let i = 0; i < axes[axis_name].length; i++){
-                line_axes[axis_name][i].visible = vis
-            }
-        }
-        
-        for (let i = 0; i < labels.length; i++){
-            if (cb_obj.active.includes(i)) {
-                setVis(glyph_dict_checkbox[labels[i]], true)
                 
-            }
-            else {setVis(glyph_dict_checkbox[labels[i]], false)}
+        for (let i = 0; i < labels.length; i++){
+            if (cb_obj.active.includes(i)) { setVis(glyph_dict_checkbox[labels[i]], true) }
+            else { setVis(glyph_dict_checkbox[labels[i]], false) }
         }
     ''')
 
@@ -161,7 +147,7 @@ def add_variant_severity_checkbox(plot_ls, glyph_dict):
     labels = list(np.unique(severities))
     active = list(range(len(labels)))
     checkbox = CheckboxGroup(labels=labels, active=active, width=100)
-
+    
     glyph_data_keys = [list(glyph.data_source.data.keys()) for glyph in glyphs]
     callback = CustomJS(args=dict(plot_ls=plot_ls, labels=labels, glyphs=glyphs, 
                                     glyph_data_keys=glyph_data_keys, ori_data_sources = [g.data_source.data for g in glyphs],
@@ -192,6 +178,33 @@ def add_variant_severity_checkbox(plot_ls, glyph_dict):
     ''')
 
     checkbox.js_on_change('active', callback)
+
+    return checkbox
+
+def add_variant_sets_checkbox(glyph_dict, variant_params):
+    labels = list(variant_params.keys())
+    active = list(range(len(labels)))
+    checkbox = CheckboxGroup(labels=labels, active=active, width=100)
+
+    glyphs = [g for g in glyph_dict['Variant'] if g]  
+    glyph_dict_checkbox = {label:[g for g in glyphs if g.data_source.data['variant_set'][0] == label] for label in labels}
+
+    callback = CustomJS(args=dict(labels=labels, glyph_dict_checkbox=glyph_dict_checkbox, #rmeove plot_ls
+                                 ), code='''
+        function setVis(glyphs, vis){
+            for (let i = 0; i < glyphs.length; i++){
+                if(glyphs[i] != null){ glyphs[i].visible = vis }
+            }
+        }
+        
+        for (let i = 0; i < labels.length; i++){
+            if (cb_obj.active.includes(i)) { setVis(glyph_dict_checkbox[labels[i]], true) }
+            else { setVis(glyph_dict_checkbox[labels[i]], false) }
+        }
+    ''')
+
+    checkbox.js_on_change('active', callback)
+
 
     return checkbox
 

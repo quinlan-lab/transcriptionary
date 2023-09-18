@@ -3,13 +3,13 @@ from .get_coords import get_variants,get_line,get_track
 from .colors import color_boxes
 from .axes import add_user_axis,add_variant_axis
 from .glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph, flatten
-from .widget_callbacks import add_checkbox,add_variant_severity_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom
+from .widget_callbacks import add_checkbox,add_variant_severity_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom,add_variant_sets_checkbox
 from . import project_coords
 import numpy as np
 import argparse
 from bokeh.plotting import figure
-from bokeh.layouts import column, row, gridplot
-from bokeh.models import ColumnDataSource, Range1d, HoverTool, LabelSet
+from bokeh.layouts import column, gridplot
+from bokeh.models import ColumnDataSource, Range1d, HoverTool, LabelSet, Div
 import yaml
 from yaml.loader import SafeLoader
 
@@ -253,7 +253,6 @@ def transcriptionary():
     for ID in transcript_IDs:
         title = 'gene={}; transcript={}/{}'.format(plot_params['gene_name'], ID, transcripts[ID]['ID'])
         if transcripts[ID]['direction']: title += ' ({})'.format(transcripts[ID]['direction'])
-        #plot,glyph_dict = plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcripts[ID], glyph_dict, variant_axes, line_axes, variant_ls, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
         plot,glyph_dict = plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcripts[ID], glyph_dict, variant_axes, line_axes, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=title)
         plot_ls.append(plot)
 
@@ -269,16 +268,12 @@ def transcriptionary():
         from bokeh.plotting import output_file, save
 
         add_exon_zoom(plot_ls,glyph_dict)
-        checkbox = add_checkbox(plot_ls,line_axes,glyph_dict,plot_params)
-        user_tracks_checkbox = add_user_tracks_checkbox(plot_ls,{**variant_axes,**line_axes},user_track_glyphs,glyph_dict['Direction'],plot_params)
+        checkbox = add_checkbox(glyph_dict,plot_params)
         
         user_line_checkboxes=[] #one checkbox per user line, so that they can be lined up with sliders
         for axis in user_line_params:
             user_line_checkbox = add_user_lines_checkbox(plot_ls, line_axes[axis], user_line_glyphs[axis], axis)
             user_line_checkboxes.append(user_line_checkbox)
-        
-        if plot_params['plot_variants']:
-            div_type,radio_group_type,div_scale,radio_group_scale = add_linear_log_scale(plot_params, variant_axes, glyph_dict)
         
         sliders = []
         for axis_name in user_line_params:
@@ -288,19 +283,22 @@ def transcriptionary():
             else:
                 sliders.append(None)
 
+        grid1 = [[checkbox]]
         if plot_params['plot_variants']:
             if plot_params['add_variant_severity_checkbox']:
                 variant_severity_checkbox = add_variant_severity_checkbox(plot_ls, glyph_dict)
-                grid1 = [[checkbox, variant_severity_checkbox, user_tracks_checkbox]]
-            else:
-                grid1 = [[checkbox, user_tracks_checkbox]]
-
+                grid1[0].append(variant_severity_checkbox)
+            if len(variant_params) > 1: #if more than one variant_set to plot
+                variant_sets_checkbox = add_variant_sets_checkbox(glyph_dict, variant_params)
+                grid1[0].append(variant_sets_checkbox)
+            if len(user_track_glyphs) > 0:
+                user_tracks_checkbox = add_user_tracks_checkbox(plot_ls,{**variant_axes,**line_axes},user_track_glyphs,glyph_dict['Direction'],plot_params)
+                grid1[0].append(user_tracks_checkbox)
             if plot_params['add_variant_axis']:
-                grid1.extend([[div_type, div_scale], [radio_group_type, radio_group_scale]])
-        
-        else:
-            grid1 = [[checkbox, user_tracks_checkbox]]
-        
+                extra_empty_divs_1,extra_empty_divs_2 = ([Div(text=""" """, width=200, height=15) for i in range(len(grid1[0]) - 2)] for j in range(2))
+                div_type,radio_group_type,div_scale,radio_group_scale = add_linear_log_scale(plot_params, variant_axes, glyph_dict)
+                grid1.extend([[div_type, div_scale] + extra_empty_divs_1, [radio_group_type, radio_group_scale] + extra_empty_divs_2])
+
         lines = list(zip(user_line_checkboxes,sliders))
         for tup in lines: grid1.append(tup)
         grid1.append(legend)
