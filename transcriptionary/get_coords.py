@@ -89,12 +89,16 @@ def get_variants(plot_params, variant_params, variant_set, transcripts, start, e
                 print('Warning: number of fields in variant set {} header argument not equal to number of fields in file {} (check for trailing delimiters).'.format(variant_set, bed_path))
 
         df = pd.read_csv(bed_path, names=variant_params[variant_set]['header'], sep='\t', index_col=None, keep_default_na=False, comment='#') 
-        variant_params[variant_set]['has_yaxis_info'] = False
+        variant_params[variant_set]['has_yaxis_info'] = 'AC' in variant_params[variant_set]['header'] and 'AF' in variant_params[variant_set]['header'] #if 'AC' and 'AF' fields are present, they will be used for lollipop heights, otherwise these will be set to 0 and lollipop heights will not be meaningful
+
         if variant_params[variant_set]['consequence_idx']: plot_params['add_variant_severity_checkbox'] = True
 
         for _,row in df.iterrows():
             if str(row.iloc[0]) != str(variant_params[variant_set]['chrom']): continue
-            di_variant = dict(pos=row.iloc[1], compact_start=-1, variant_set=variant_set, info_annotations=variant_params[variant_set]['info_annotations'], vep=variant_params[variant_set]['vep'], allele_count=0, allele_frequency=0, allele_number=0)
+            allele_count = 0 if not variant_params[variant_set]['has_yaxis_info'] else int(row['AC'])
+            allele_frequency = 0 if not variant_params[variant_set]['has_yaxis_info'] else float(row['AF'])
+
+            di_variant = dict(pos=row.iloc[1], compact_start=-1, variant_set=variant_set, info_annotations=variant_params[variant_set]['info_annotations'], vep=variant_params[variant_set]['vep'], allele_count=allele_count, allele_frequency=allele_frequency)
 
             for info_field in variant_params[variant_set]['info_annotations']: di_variant[info_field] = row[info_field]
 
@@ -115,7 +119,9 @@ def get_variants(plot_params, variant_params, variant_set, transcripts, start, e
     elif form == 'bed':
         variant_ls = get_variants_bed(filepath)
         
-    else: raise ValueError('Invalid filepath: {}'.format(filepath))
+    else: raise ValueError('Invalid file format for variant set {}: {}'.format(variant_set, filepath))
+
+    if not variant_params[variant_set]['has_yaxis_info']: print('Warning: variant set {} does not have both AC (allele count) and AF (allele frequency) fields; lollipop heights will all be set to 0.')
 
     return variant_ls
 

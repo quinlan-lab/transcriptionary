@@ -3,7 +3,7 @@ from bokeh.models import ColumnDataSource, Rect, Segment, Circle
 from .colors import  color_variants,lighten_hex_color
 import math
 
-def flatten(ls): return [i for s in ls for i in s]
+def flatten(ls): return sum(ls, [])
 
 def center_feature(feature):
     center = feature[0] + (feature[1] - feature[0])/2
@@ -162,7 +162,6 @@ def add_variant_glyph(plot_params, variant_params, variant_set, transcript_ID, p
     x = [v['compact_pos'] for v in variant_ls]
     y0s = [plot_params['y0'] - plot_params['exon_height'] / 2] * N
 
-    #def get_y1(ls, yaxis, yaxis_scale):
     def get_y1(ys, all_ys, yaxis, yaxis_scale):
 
         if yaxis == 'AC' and yaxis_scale == 'linear':
@@ -210,7 +209,6 @@ def add_variant_glyph(plot_params, variant_params, variant_set, transcript_ID, p
     hover_colors = [lighten_hex_color(c, 40) for c in colors]
 
     allele_counts = [v['allele_count'] for v in variant_ls]
-    #allele_numbers = [v['allele_number'] for v in variant_ls]
     allele_frequencies = [v['allele_frequency'] for v in variant_ls]
 
     all_vars = flatten([variant_params[var_set]['variant_ls'] for var_set in variant_params]) #will need list of all vars to get_y1s since we want every variant set to be plotted on the same scale
@@ -258,10 +256,6 @@ def add_variant_glyph(plot_params, variant_params, variant_set, transcript_ID, p
 
     if plot_params['add_variant_axis']:
 
-        # y1_ci_li_ct, y1_sg_li_ct = get_y1(allele_counts, 'AC', 'linear')
-        # y1_ci_lg_ct, y1_sg_lg_ct = get_y1(allele_counts, 'AC', 'log')
-        # y1_ci_li_fr, y1_sg_li_fr = get_y1(allele_frequencies, 'AF', 'linear')
-        # y1_ci_lg_fr, y1_sg_lg_fr = get_y1(allele_frequencies, 'AF', 'log')
         y1_ci_li_ct, y1_sg_li_ct = get_y1(allele_counts, all_allele_counts, 'AC', 'linear')
         y1_ci_lg_ct, y1_sg_lg_ct = get_y1(allele_counts, all_allele_counts, 'AC', 'log')
         y1_ci_li_fr, y1_sg_li_fr = get_y1(allele_frequencies, all_allele_frequencies, 'AF', 'linear')
@@ -295,7 +289,7 @@ def add_track_glyph(user_track_params, track_name, plot, tracks, height, y_pos):
         tracks = [{'ID': 'empty track', 'start': 0, 'end': 0, 'compact_start': [0], 'compact_end': [0], 'color': '#111111', 'strand': ''}]
         for field in user_track_params[track_name]['annotate_with']: tracks[0][field] = ''
     tracks = sorted(tracks, key=lambda di: di['end']-di['start'], reverse=True) #make sure smaller tracks are in front of larger tracks
-    tracks_compact = flatten([zip(di['compact_start'], di['compact_end']) for di in tracks])
+    tracks_compact = flatten([list(zip(di['compact_start'], di['compact_end'])) for di in tracks])
     color_by = flatten([[di['ID']]*len(di['compact_start']) for di in tracks]) #duplicate color_by for each exon spanned by box
     colors = flatten([[di['color']]*len(di['compact_start']) for di in tracks]) #duplicate color for each exon spanned by box
 
