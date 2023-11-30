@@ -3,7 +3,7 @@ from bokeh.models import ColumnDataSource, Rect, Segment, Circle
 from .colors import  color_variants,lighten_hex_color
 import math
 
-def flatten(ls): return sum(ls, [])
+def flatten(ls): return [i for s in ls for i in s]
 
 def center_feature(feature):
     center = feature[0] + (feature[1] - feature[0])/2

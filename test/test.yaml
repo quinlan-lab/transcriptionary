@@ -17,13 +17,20 @@ intron_size: 20
 
 plot_UTRs: True
 plot_direction: True
+plot_variants: True
+
+min_lollipop_height: 15
+lollipop_radius: 5
+lollipop_line_width: 2
+
+default_y_axis: 'AC' # can be toggled with HTML output
+default_y_axis_scale: 'log' # can be toggled with HTML output
 
 glyph_colors:
     intron: 'gray 11'
     exon: 'davys gray'
     arrow: '#e8e8e8'
     UTR: '#969696'
-    variant: 'charcoal' #default lollipop color if no severity information
 
 palettes_filepath: 'default_colors/palettes.yaml' #filepath to palettes config
 named_colors_filepath: 'default_colors/named_colors.yaml' #filepath to named colors config
@@ -31,40 +38,40 @@ track_palette: 'bang_wong_palette' #palette to draw random track colors from; ca
 ...
 ---
 #variants
-plot_variants: True
-
 #VCF example
-variant_format: 'vcf'
-filepath: 'test/data/gnomad.exomes.chr20.subset.vcf.gz'
-chrom: chr20
-info_annotations: #INFO fields to add to hover boxes (VCF only)
-    - pab_max
-    - popmax
-vep: #VCF only; leave empty if not VEP annotated
-    field_name: vep #name of INFO field with VEP string (e.g. vep, ann, csq)
-    vep_fields: #vep fields to add to hover annotations
-    - SYMBOL
-    - Amino_acids
-    - Consequence
-    annotate_severity_by: max_severity #possible arguments are transcript_severity (use VEP annotations from given transcript) and max_severity (use VEP annotation from most severe transcript specified in 'transcripts' argument); these apply to vep_fields also
+gnomAD_vcf:
+    format: 'vcf'
+    filepath: 'test/data/gnomad.exomes.chr20.subset.vcf.gz'
+    chrom: 'chr20'
+    info_annotations: #INFO fields to add to hover boxes (VCF only)
+        - pab_max
+        - popmax
+    vep: #VCF only; leave empty if not VEP annotated
+        field_name: vep #name of INFO field with VEP string (e.g. vep, ann, csq)
+        vep_fields: #vep fields to add to hover annotations
+        - SYMBOL
+        - Amino_acids
+        - Consequence
+        annotate_severity_by: transcript_severity #possible arguments are transcript_severity (use VEP annotations from given transcript) and max_severity (use VEP annotation from most severe transcript specified in 'transcripts' argument); these apply to vep_fields also
+    color: charcoal
+    variant_severity_colors: #will only be used if consequence_idx is set; overrides "color"
+        LOW: 'apple green'
+        MED: '#f6aa1c'
+        HIGH: '#e01e37'
 
 #BED example
-# variant_format: 'bed' #can be VCF or BED
-# filepath: 'test/data/gnomad_v3.1.1_KCNQ2_SNVs.bed'
-# header: ['Chromosome', 'Start', 'End', 'Reference', 'Alternate', 'Allele Count', 'Allele Number', 'Allele Frequency', 'VEP Annotation'] # BED only
-# chrom: chr20
+# gnomAD_bed:
+#     format: 'bed' #can be VCF or BED
+#     filepath: 'test/data/gnomad_v3.1.1_KCNQ2_SNVs.bed'
+#     chrom: 'chr20'
+#     header: ['Chromosome', 'Start', 'End', 'Reference', 'Alternate', 'AC', 'AN', 'AF', 'VEP Annotation'] # BED only; if 'AC' and 'AF' fields are present, they will be used for lollipop heights
+#     color: saffron
+#     variant_severity_colors: #will only be used if consequence_idx is set; overrides "color"
+#         LOW: 'apple green'
+#         MED: '#f6aa1c'
+#         HIGH: '#e01e37'
+#     consequence_idx: 8 #0-based
 
-default_y_axis: 'AC' # can be toggled with HTML output
-default_y_axis_scale: 'log' # can be toggled with HTML output
-
-min_lollipop_height: 15
-lollipop_radius: 5
-lollipop_line_width: 2
-variant_severity_colors:
-    LOW: 'apple green'
-    MED: '#f6aa1c'
-    HIGH: '#e01e37'
-    NONE: '#171717'
 ...
 
 ---
