@@ -141,6 +141,7 @@ def parse_args():
         variant_params = params[1]
         user_track_params = params[2]
         user_line_params = params[3]
+        if not variant_params: variant_params = []
         if not user_track_params: user_track_params = []
         if not user_line_params: user_line_params = []
 
@@ -157,7 +158,6 @@ def parse_args():
 
     for glyph_type in plot_params['glyph_colors']: plot_params['glyph_colors'][glyph_type] = get_color(plot_params['glyph_colors'][glyph_type])
 
-    #for sev in plot_params['variant_severity_colors']: plot_params['variant_severity_colors'][sev] = get_color(plot_params['variant_severity_colors'][sev])
     for variant_set in variant_params:
         for sev in variant_params[variant_set]['variant_severity_colors']:
             variant_params[variant_set]['variant_severity_colors'][sev] = get_color(variant_params[variant_set]['variant_severity_colors'][sev])
@@ -176,7 +176,7 @@ def parse_args():
 
     for axis in user_line_params:
         for line in user_line_params[axis]['lines']:
-            user_line_params[axis]['lines'][line]['color'] = get_color(user_line_params[axis]['lines'][line]['color'])
+            user_line_params[axis]['lines'][line]['c olor'] = get_color(user_line_params[axis]['lines'][line]['color'])
     
     ### VARIANTS ###
     for variant_set in variant_params:
