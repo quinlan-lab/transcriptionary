@@ -176,7 +176,7 @@ def parse_args():
 
     for axis in user_line_params:
         for line in user_line_params[axis]['lines']:
-            user_line_params[axis]['lines'][line]['c olor'] = get_color(user_line_params[axis]['lines'][line]['color'])
+            user_line_params[axis]['lines'][line]['color'] = get_color(user_line_params[axis]['lines'][line]['color'])
     
     ### VARIANTS ###
     for variant_set in variant_params:
@@ -268,7 +268,7 @@ def transcriptionary():
 
     if output_format == 'html': #only add widgets for HTML  
 
-        empty_plot = figure(plot_height=1500,outline_line_color=None) #for HTML, add white space at bottom so hover boxes are not cut off 
+        empty_plot = figure(plot_height=1500,outline_line_color=None, toolbar_location=None) #for HTML, add white space at bottom so hover boxes are not cut off 
         empty_plot.line(x=[0], y=[0]) #avoid empty plot warning
         empty_plot.yaxis.visible = empty_plot.xaxis.visible = empty_plot.grid.visible = False
         plot_ls.append(empty_plot) 
