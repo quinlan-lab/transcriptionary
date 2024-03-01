@@ -307,7 +307,7 @@ def add_track_glyph(user_track_params, track_name, plot, tracks, height, y_pos):
         true_end=flatten([[di['end']]*len(di['compact_start']) for di in tracks]), 
         true_len=flatten([[di['end'] - di['start'] + 1]*len(di['compact_start']) for di in tracks]))
 
-    for field in user_track_params[track_name]['annotate_with']: cds_dict[field] = [di[field] for di in tracks]
+    for field in user_track_params[track_name]['annotate_with']: cds_dict[field] = flatten([[di[field]]*len(di['compact_start']) for di in tracks]) #duplicate field for each exon spanned by box
 
     source = ColumnDataSource(cds_dict)
 
