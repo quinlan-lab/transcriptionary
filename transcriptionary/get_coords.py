@@ -20,7 +20,6 @@ def get_variants(plot_params, variant_params, variant_set, transcripts, start, e
             vcf.get_header_type('AF')
             variant_params[variant_set]['has_yaxis_info'] = True
         except:
-            print('Variant set \'{}\' does not have all both \'AC\' and \'AF\' fields, so lollipop heights will be set to 0'.format(variant_set))
             variant_params[variant_set]['has_yaxis_info'] = False
 
         def get_allele_field(v, allele_field): #if vcf does not have AC/AN/AF field return 0
@@ -121,7 +120,7 @@ def get_variants(plot_params, variant_params, variant_set, transcripts, start, e
         
     else: raise ValueError('Invalid file format for variant set {}: {}'.format(variant_set, filepath))
 
-    if not variant_params[variant_set]['has_yaxis_info']: print('Warning: variant set {} does not have both AC (allele count) and AF (allele frequency) fields; lollipop heights will all be set to 0.')
+    if not variant_params[variant_set]['has_yaxis_info']: print('Warning: variant set {} does not have both AC (allele count) and AF (allele frequency) fields; all lollipop heights will be set to 0.'.format(variant_set))
 
     return variant_ls
 
