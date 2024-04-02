@@ -12,7 +12,7 @@ def add_linear_log_scale(plot_params, axes, glyph_dict):
     radio_group_type = RadioGroup(labels=variant_type_labels, active=0 if plot_params['default_y_axis'] == 'AC' else 1, width=200)
     radio_group_scale = RadioGroup(labels=variant_scale_labels, active=0 if plot_params['default_y_axis_scale'] == 'linear' else 1, width=200)
 
-    radio_group_type.js_on_click(CustomJS(args=dict(radio_group_scale=radio_group_scale,axes=axes, 
+    radio_group_type.js_on_change('active', CustomJS(args=dict(radio_group_scale=radio_group_scale,axes=axes, 
                                                     variant=glyph_dict['Variant']), 
         code="""        
         function setAxisVis(axis_name, vis){
@@ -60,7 +60,7 @@ def add_linear_log_scale(plot_params, axes, glyph_dict):
         }
     """))    
         
-    radio_group_scale.js_on_click(CustomJS(args=dict(radio_group_type=radio_group_type,axes=axes, 
+    radio_group_scale.js_on_change('active', CustomJS(args=dict(radio_group_type=radio_group_type,axes=axes, 
                                                      variant=glyph_dict['Variant']), code="""        
         function setAxisVis(axis_name, vis){
             for (let i = 0; i < axes[axis_name].length; i++){
@@ -212,31 +212,6 @@ def add_user_tracks_checkbox(plot_ls,axes,user_track_glyphs,direction_glyphs,plo
     labels = list(user_track_glyphs.keys())
     active = list(range(len(labels)))
     direction_glyphs = [glyph for glyph in direction_glyphs if glyph]
-
-    # uncomment for demo
-    # active = []
-    # for p in plot_ls:
-    #     p.y_range.start = plot_params['transcript_height']-plot_params['exon_height']/2
-    #     for axis in p.extra_y_ranges.values():
-    #         axis.start = plot_params['transcript_height']-plot_params['exon_height']/2
-            
-    # for key in user_track_glyphs:
-    #     for idx in range(len(user_track_glyphs[key])):
-    #         user_track_glyphs[key][idx].visible = False
-    
-    # direction_glyphs = [glyph for glyph in direction_glyphs if glyph]
-    # for glyph in direction_glyphs:
-    #     for j in range(int(len(glyph.data_source.data['y'])/2)):
-    #         #triangle
-    #         glyph.data_source.data['y'][j*2+1][0][0][0] = plot_params['transcript_height'] - plot_params['exon_height']/2 + (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*1.5)
-    #         glyph.data_source.data['y'][j*2+1][0][0][1] = plot_params['transcript_height'] + plot_params['exon_height']/2 - (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*1.5)
-    #         #rectangle
-    #         glyph.data_source.data['y'][j*2][0][0][0] = plot_params['transcript_height'] - plot_params['exon_height']/5 + (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*4.5)
-    #         glyph.data_source.data['y'][j*2][0][0][1] = plot_params['transcript_height'] + plot_params['exon_height']/5 - (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*4.5)
-    #         glyph.data_source.data['y'][j*2][0][0][2] = plot_params['transcript_height'] + plot_params['exon_height']/5 - (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*4.5)
-    #         glyph.data_source.data['y'][j*2][0][0][3] = plot_params['transcript_height'] - plot_params['exon_height']/5 + (plot_params['transcript_height']-plot_params['exon_height']/2)/(plot_params['track_height']*4.5)
-
-    ###
 
     user_tracks_checkbox = CheckboxGroup(labels=labels,active=active, width=100)
     axis_names = [ls[0].axis_label for ls in list(axes.values()) if len(ls)>0]
@@ -393,7 +368,7 @@ def add_smoothing_slider(glyph_ls, fill_area_ls, title=''):
 def add_legend(user_line_params, width=270):
     num_lines = sum([len(user_line_params[axis_name]['lines']) for axis_name in user_line_params])
     height = 20 *num_lines + 10
-    legend_plot = figure(plot_height=height,plot_width=width,toolbar_location=None)
+    legend_plot = figure(height=height,width=width,toolbar_location=None)
     legend_plot.yaxis.visible = legend_plot.xaxis.visible = legend_plot.grid.visible = False
     
     legend_items = []

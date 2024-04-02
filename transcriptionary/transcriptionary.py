@@ -16,12 +16,11 @@ from yaml.loader import SafeLoader
 def plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcript_dict, glyph_dict, variant_axes, line_axes, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
 
     project_coords.adjust_coordinates(transcript_dict['exons'], intron_size=plot_params['intron_size'])
-    plot_height = plot_params['plot_height']    
-    plot = figure(title=title, plot_width=1500, tools='tap,box_zoom,xpan,reset', plot_height=plot_height,min_border=0,#, toolbar_location=None,
-               x_range=Range1d(0, transcript_dict['exons'][-1]['compact_end']), y_range=Range1d(0,plot_height), background_fill_color='white')
+    # plot_height = plot_params['plot_height']    
+    plot = figure(title=title, width=1500, tools='tap,box_zoom,xpan,reset', height=plot_params['plot_height'],min_border=0,#, toolbar_location=None,
+               x_range=Range1d(0, transcript_dict['exons'][-1]['compact_end']), y_range=Range1d(0,plot_params['plot_height']), background_fill_color='white')
     
     plot.grid.grid_line_color = None
-    plot.toolbar.active_drag = None
     plot.yaxis[0].visible = False
 
     transcript_ID = transcript_dict['ID'].split(':')[-1]
@@ -268,7 +267,7 @@ def transcriptionary():
 
     if output_format == 'html': #only add widgets for HTML  
 
-        empty_plot = figure(plot_height=1500,outline_line_color=None, toolbar_location=None) #for HTML, add white space at bottom so hover boxes are not cut off 
+        empty_plot = figure(height=1500,outline_line_color=None, toolbar_location=None) #for HTML, add white space at bottom so hover boxes are not cut off 
         empty_plot.line(x=[0], y=[0]) #avoid empty plot warning
         empty_plot.yaxis.visible = empty_plot.xaxis.visible = empty_plot.grid.visible = False
         plot_ls.append(empty_plot) 
@@ -310,6 +309,7 @@ def transcriptionary():
         lines = list(zip(user_line_checkboxes,sliders))
         for tup in lines: grid1.append(tup)
         grid1.append(legend)
+        # grid = gridplot(grid1, toolbar_location=None)
         grid = gridplot(grid1, toolbar_location=None)
         output_file(output)
         save(column([grid]+plot_ls))
