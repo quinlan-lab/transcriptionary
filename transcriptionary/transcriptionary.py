@@ -1,22 +1,20 @@
 from .process_gene_gff import gff_to_db, get_gene_feature, get_transcript_dict
 from .get_coords import get_variants,get_line,get_track
 from .colors import color_boxes
-from .axes import add_user_axis,add_variant_axis
+from .axes import add_user_axis,add_variant_axis,add_axis
 from .glyphs import add_intron_glyph, add_exon_glyph, add_variant_glyph, add_UTR_glyph, add_track_glyph, add_multi_line_glyph
 from .widget_callbacks import add_checkbox,add_variant_severity_checkbox,add_user_tracks_checkbox,add_user_lines_checkbox,add_smoothing_slider,add_legend,add_linear_log_scale,add_exon_zoom,add_variant_sets_checkbox
 from . import project_coords
 import numpy as np
 import argparse
-from bokeh.plotting import figure
+from bokeh.plotting import figure, output_file, save
 from bokeh.layouts import column, gridplot
 from bokeh.models import ColumnDataSource, Range1d, HoverTool, LabelSet, Div
 import yaml
 from yaml.loader import SafeLoader
 
 def plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcript_dict, glyph_dict, variant_axes, line_axes, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
-
     project_coords.adjust_coordinates(transcript_dict['exons'], intron_size=plot_params['intron_size'])
-    # plot_height = plot_params['plot_height']    
     plot = figure(title=title, width=1500, tools='tap,box_zoom,xpan,reset', height=plot_params['plot_height'],min_border=0,#, toolbar_location=None,
                x_range=Range1d(0, transcript_dict['exons'][-1]['compact_end']), y_range=Range1d(0,plot_params['plot_height']), background_fill_color='white')
     
@@ -234,6 +232,7 @@ def transcriptionary():
     transcripts = get_transcript_dict(plot_params, gff_db, gene_feature, transcript_IDs)
     transcript_IDs = list(transcripts.keys()) #if 'all', transcript_IDs will become list of transcript names; if nonexistent IDs they are removed
 
+    plot_params['plot_variants'] = bool(variant_params)
     plot_params['add_variant_severity_checkbox'] = False #will be set to true if consequence annotations are present
 
     for variant_set in variant_params:
@@ -272,8 +271,6 @@ def transcriptionary():
         empty_plot.yaxis.visible = empty_plot.xaxis.visible = empty_plot.grid.visible = False
         plot_ls.append(empty_plot) 
 
-        from bokeh.plotting import output_file, save
-
         add_exon_zoom(plot_ls,glyph_dict)
         checkbox = add_checkbox(glyph_dict,plot_params)
         
@@ -298,18 +295,23 @@ def transcriptionary():
             if len(variant_params) > 1: #if more than one variant_set to plot
                 variant_sets_checkbox = add_variant_sets_checkbox(glyph_dict, variant_params)
                 grid1[0].append(variant_sets_checkbox)
-            if len(user_track_glyphs) > 0:
-                user_tracks_checkbox = add_user_tracks_checkbox(plot_ls,{**variant_axes,**line_axes},user_track_glyphs,glyph_dict['Direction'],plot_params)
-                grid1[0].append(user_tracks_checkbox)
             if plot_params['add_variant_axis']:
                 extra_empty_divs_1,extra_empty_divs_2 = ([Div(text=""" """, width=200, height=15) for i in range(len(grid1[0]) - 2)] for j in range(2))
                 div_type,radio_group_type,div_scale,radio_group_scale = add_linear_log_scale(plot_params, variant_axes, glyph_dict)
                 grid1.extend([[div_type, div_scale] + extra_empty_divs_1, [radio_group_type, radio_group_scale] + extra_empty_divs_2])
 
+        if len(user_track_glyphs) > 0:
+            axes = {**variant_axes,**line_axes}
+
+            if not [ax_ls for ax_ls in axes.values() if ax_ls]: #if no user-defined y axis, add empty invisible y axis so tracks can move according to checkbox
+                axes = {'empty': [add_axis(plot, plot_params, 'empty_axis', 1, 0, plot_params['plot_height'], 1, False, visible=False)]}
+
+            user_tracks_checkbox = add_user_tracks_checkbox(plot_ls,axes,user_track_glyphs,glyph_dict['Direction'],plot_params)
+            grid1[0].append(user_tracks_checkbox)
+
         lines = list(zip(user_line_checkboxes,sliders))
         for tup in lines: grid1.append(tup)
         grid1.append(legend)
-        # grid = gridplot(grid1, toolbar_location=None)
         grid = gridplot(grid1, toolbar_location=None)
         output_file(output)
         save(column([grid]+plot_ls))

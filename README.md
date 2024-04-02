@@ -52,7 +52,6 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 
 `plot_UTRs`: show UTRs (boolean)
 `plot_direction`: show arrows with direction (boolean)
-`plot_variants`: show lollipops (boolean)
 
 `min_lollipop_height`: minimum height of lollipop in pixels; default 15
 `lollipop_radius`: radius of lollipop in pixels; default 5

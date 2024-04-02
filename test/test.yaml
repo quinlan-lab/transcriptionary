@@ -17,7 +17,6 @@ intron_size: 20
 
 plot_UTRs: True
 plot_direction: True
-plot_variants: True
 
 min_lollipop_height: 15
 lollipop_radius: 5
