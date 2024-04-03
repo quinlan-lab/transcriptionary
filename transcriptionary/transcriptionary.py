@@ -8,6 +8,7 @@ from . import project_coords
 import numpy as np
 import argparse
 from bokeh.plotting import figure, output_file, save
+from bokeh.models.tools import HoverTool
 from bokeh.layouts import column, gridplot
 from bokeh.models import ColumnDataSource, Range1d, HoverTool, LabelSet, Div
 import subprocess
@@ -16,9 +17,9 @@ from yaml.loader import SafeLoader
 
 def plot_transcript(plot_params, variant_params, user_track_params, user_line_params, transcript_dict, glyph_dict, variant_axes, line_axes, user_tracks, user_track_glyphs, user_lines, user_line_glyphs, title=''):
     project_coords.adjust_coordinates(transcript_dict['exons'], intron_size=plot_params['intron_size'])
-    plot = figure(title=title, width=1500, tools='tap,box_zoom,xpan,reset', height=plot_params['plot_height'],min_border=0,#, toolbar_location=None,
-               x_range=Range1d(0, transcript_dict['exons'][-1]['compact_end']), y_range=Range1d(0,plot_params['plot_height']), background_fill_color='white')
-    
+    plot = figure(title=title, width=1500, tools='xpan,xzoom_in,xzoom_out,reset,save', height=plot_params['plot_height'],min_border=0,
+               x_range=Range1d(0, max([e['compact_end'] for e in transcript_dict['exons']]), bounds='auto'), y_range=Range1d(0,plot_params['plot_height']), background_fill_color='white')
+    plot.toolbar.logo = None
     plot.grid.grid_line_color = None
     plot.yaxis[0].visible = False
 
@@ -43,7 +44,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
             if len(variant_params) > 1: #if more than one variant dataset, add dataset name to hover box annotation
                 tooltips_variant_set = [('Dataset', '@variant_set')] + tooltips_variant_set
 
-            plot.add_tools(HoverTool(tooltips=tooltips_variant_set, renderers=[circle_glyph,ray_glyph], point_policy='follow_mouse', attachment='below'))
+            plot.add_tools(HoverTool(tooltips=tooltips_variant_set, renderers=[circle_glyph,ray_glyph], point_policy='follow_mouse', attachment='below', visible=False))
 
             glyph_dict['Variant'].extend([ray_glyph,circle_glyph])
 
@@ -71,11 +72,11 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
     ### INTRONS ###
     introns = project_coords.get_introns_from_exons(transcript_dict['exons'])
     introns_glyph = add_intron_glyph(plot_params, plot, introns)
-    plot.add_tools(HoverTool(tooltips=tooltips_features, renderers=[introns_glyph], point_policy='follow_mouse', attachment='below'))    
+    plot.add_tools(HoverTool(tooltips=tooltips_features, renderers=[introns_glyph], point_policy='follow_mouse', attachment='below', visible=False))    
     
     ### EXONS ###
     exons_glyph,arrow_glyph = add_exon_glyph(plot_params, plot, transcript_dict['exons'], transcript_dict['direction'])
-    plot.add_tools(HoverTool(tooltips=tooltips_features, renderers=[exons_glyph], point_policy='follow_mouse', attachment='below'))
+    plot.add_tools(HoverTool(tooltips=tooltips_features, renderers=[exons_glyph], point_policy='follow_mouse', attachment='below', visible=False))
     
     glyph_dict['Direction'].append(arrow_glyph)
     glyph_dict['exon'].append(exons_glyph)
@@ -83,7 +84,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
     ### UTRs ###
     project_coords.map_box(transcript_dict['UTRs'], transcript_dict['exons'])
     UTR_glyph = add_UTR_glyph(plot_params, plot, transcript_dict['UTRs'])
-    plot.add_tools(HoverTool(tooltips=tooltips_features, renderers=[UTR_glyph], point_policy='follow_mouse', attachment='below'))    
+    plot.add_tools(HoverTool(tooltips=tooltips_features, renderers=[UTR_glyph], point_policy='follow_mouse', attachment='below', visible=False))    
     glyph_dict['UTRs'].append(UTR_glyph)
 
     ### USER TRACKS ###
@@ -97,7 +98,7 @@ def plot_transcript(plot_params, variant_params, user_track_params, user_line_pa
 
         y = ((h*1.5)*(len(user_tracks) - idx - 1)+(h))
         track_glyph = add_track_glyph(user_track_params, track_name, plot, user_tracks[track_name], h*0.9, y)
-        plot.add_tools(HoverTool(tooltips=tooltips_tracks, renderers=[track_glyph], point_policy='follow_mouse', attachment='below'))
+        plot.add_tools(HoverTool(tooltips=tooltips_tracks, renderers=[track_glyph], point_policy='follow_mouse', attachment='below', visible=False))
         user_track_glyphs[track_name].append(track_glyph)
         cs = ColumnDataSource(dict(x=[0], y=[(h*1.5)*(len(user_tracks) - idx - 1)], text=[list(user_tracks.keys())[idx]]))
         label = LabelSet(source=cs, x='x', y='y', text='text',text_font_size='{}px'.format(plot_params['track_height']), text_align='left')
@@ -270,7 +271,7 @@ def transcriptionary():
         empty_plot = figure(height=1500,outline_line_color=None, toolbar_location=None) #for HTML, add white space at bottom so hover boxes are not cut off 
         empty_plot.line(x=[0], y=[0]) #avoid empty plot warning
         empty_plot.yaxis.visible = empty_plot.xaxis.visible = empty_plot.grid.visible = False
-        plot_ls.append(empty_plot) 
+        # plot_ls.append(empty_plot) 
 
         add_exon_zoom(plot_ls,glyph_dict)
         checkbox = add_checkbox(glyph_dict,plot_params)
@@ -313,7 +314,7 @@ def transcriptionary():
         lines = list(zip(user_line_checkboxes,sliders))
         for tup in lines: grid1.append(tup)
         grid1.append(legend)
-        grid = gridplot(grid1, toolbar_location=None)
+        grid = gridplot(grid1, merge_tools=False)
         output_file(output)
         save(column([grid]+plot_ls))
 

@@ -1,4 +1,5 @@
 from bokeh.models import ColumnDataSource,CustomJS,CheckboxGroup,Slider,Div,RadioGroup
+from bokeh.models.tools import TapTool
 from bokeh.plotting import figure
 import numpy as np
 
@@ -389,6 +390,7 @@ def add_legend(user_line_params, width=270):
 
 def add_exon_zoom(plot_ls,glyph_dict):
     for (plot,exon_glyph,arrow_glyph) in zip(plot_ls,glyph_dict['exon'], glyph_dict['Direction']):
+        plot.add_tools(TapTool(visible=False))
         s0_exon = exon_glyph.data_source
         s1_exon = ColumnDataSource(data=exon_glyph.data_source.data) #deep copy is not working in CustomJS so I'm doing it here
         try:
