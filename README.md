@@ -40,6 +40,8 @@ https://home.chpc.utah.edu/~u6038618/transcriptionary/plot.html
 
 `gff_path`: path to GFF or GTF (for feature coordinates). When running the first time, a `gff.db` file will be created for you. When rerunning, can change this parameter to the .gff.db file to avoid recreating it.
 
+`title`: title of HTML; used for HTML output only
+
 `gene_name`: gene name
 
 `chrom`: chromosome (from features GFF/GTF)

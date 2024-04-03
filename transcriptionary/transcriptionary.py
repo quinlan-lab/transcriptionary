@@ -10,6 +10,7 @@ import argparse
 from bokeh.plotting import figure, output_file, save
 from bokeh.layouts import column, gridplot
 from bokeh.models import ColumnDataSource, Range1d, HoverTool, LabelSet, Div
+import subprocess
 import yaml
 from yaml.loader import SafeLoader
 
@@ -315,6 +316,9 @@ def transcriptionary():
         grid = gridplot(grid1, toolbar_location=None)
         output_file(output)
         save(column([grid]+plot_ls))
+
+        #change HTML title from 'Bokeh Plot'
+        subprocess.run(['sed', '-i', 's/<title>Bokeh Plot<\/title>/<title>{}<\/title>/g'.format(plot_params['title']), output])
 
     elif output_format == 'png':
         from bokeh.io import export_png

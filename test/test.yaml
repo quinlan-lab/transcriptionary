@@ -6,6 +6,7 @@ transcripts: 'all' #['flattened-exons'] #can be: (1) "transcript_names": list al
 gff_path: 'test/data/test.gff3'  #if not database file, database will be created for you
 
 ####Plot params
+title: 'Transcriptionary Demo' # title of HTML; used for HTML output only
 gene_name: 'KCNQ2'
 chrom: chr20
 
